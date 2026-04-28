@@ -1,0 +1,274 @@
+Refactor Report
+Project: KNN vs Decision Tree Market Sales Kocaeli
+
+Purpose
+-------
+This report documents the small refactoring changes made to the existing Java
+project. The project was not rewritten from scratch. The same algorithms are
+still used: K-Nearest Neighbors and Decision Tree with Gini impurity.
+
+
+1. src/main/java/data/DataLoader.java
+-------------------------------------
+What changed:
+- Simplified the class comment and made the class responsibility clearer.
+- Kept DataLoader focused only on reading Excel rows and creating SaleRecord
+  objects.
+- Replaced mixed row-skipping logic with helper methods:
+  - shouldSkipRow
+  - countNonBlankCells
+  - isBlank
+- Used Apache POI DataFormatter for reading cell text more consistently.
+- Kept missing brands as "UNKNOWN".
+
+Why it changed:
+- The original file worked, but the loading rules were spread through the loop.
+- The new helper methods make it easier to see when a row is skipped.
+- DataFormatter avoids confusing string conversions for numeric Excel cells.
+
+How to explain it to the professor:
+"DataLoader has one job: read the Excel file and convert each valid spreadsheet
+row into a SaleRecord. It does not do preprocessing and it does not contain any
+machine learning logic."
+
+How to test:
+- Run the application.
+- Load the Excel dataset.
+- Check that total scanned rows, skipped rows, and loaded records are printed.
+- Confirm the dataset still loads successfully.
+
+
+2. src/main/java/data/PreProcessor.java
+---------------------------------------
+What changed:
+- Reorganized preprocessing into clear steps:
+  - validation
+  - brand encoding
+  - category encoding
+  - numeric min-max calculation
+  - transformation
+- Removed the unused genderEncoder map.
+- Added constants for unknown gender, unknown brand, and unknown label.
+- Fixed numeric min/max initialization by using:
+  - Double.POSITIVE_INFINITY
+  - Double.NEGATIVE_INFINITY
+- Added a check that training data cannot be empty.
+- Unknown test categories are now encoded as -1 instead of silently becoming
+  class 0.
+
+Why it changed:
+- The original min/max initialization used Double.MIN_VALUE, which is a tiny
+  positive number, not the most negative number. This can be misleading and can
+  produce incorrect max values in some datasets.
+- Encoding an unknown test category as class 0 could make evaluation results
+  look better or worse incorrectly.
+- The new version keeps the "fit only on training data" rule clearer.
+
+How to explain it to the professor:
+"PreProcessor converts raw records into numeric features. It is fitted only on
+the training set, then it transforms both train and test data using the same
+encoders and normalization values. This prevents data leakage."
+
+How to test:
+- Load the dataset.
+- Confirm the UI prints the number of categories and features used.
+- Run both models.
+- If a test record has a category that was not present in training, it is
+  skipped during evaluation instead of being counted as class 0.
+
+
+3. src/main/java/classifier/KNNClassifier.java
+----------------------------------------------
+What changed:
+- Replaced the unclear double[] pair used for distance and label with a small
+  Neighbor helper class.
+- Added validation that KNN cannot train on empty data.
+- Added validation that prediction cannot run before training.
+- Added validation that compared feature vectors must have the same length.
+- Split prediction into smaller parts:
+  - findNeighbors
+  - computeDistance
+
+Why it changed:
+- A double[] containing distance and label is hard to explain because the
+  meaning of index 0 and index 1 is hidden.
+- Neighbor makes the code read like the algorithm explanation.
+- The algorithm did not change: it still stores training records, computes
+  Euclidean distance, sorts neighbors, and majority-votes.
+
+How to explain it to the professor:
+"KNN is lazy learning. Training only stores the training data. During prediction,
+the classifier computes distances to all training records, sorts them, takes the
+nearest K records, and returns the majority class."
+
+How to test:
+- Load the dataset.
+- Select KNN.
+- Try K = 5.
+- Run the model and confirm accuracy, prediction time, and confusion matrix are
+  displayed.
+
+
+4. src/main/java/classifier/DecisionTreeClassifier.java
+------------------------------------------------------
+What changed:
+- Kept the same Decision Tree algorithm and Gini impurity logic.
+- Extracted repeated left/right splitting into splitRecords.
+- Added SplitResult helper class to store left and right partitions.
+- Added shouldCreateLeaf to group the stopping conditions.
+- Added validation that training data cannot be empty.
+- Added validation that prediction cannot run before training.
+
+Why it changed:
+- The original tree-building method had several responsibilities in one place.
+- Splitting records is now named directly, so the code follows the same order
+  as the explanation:
+  stop if needed, find best split, split records, recursively build children.
+
+How to explain it to the professor:
+"The Decision Tree checks possible feature thresholds and chooses the split with
+the lowest weighted Gini impurity. It stops when the node is pure, too small,
+too deep, or no useful split exists."
+
+How to test:
+- Load the dataset.
+- Select Decision Tree.
+- Try max depth = 10.
+- Run the model and confirm accuracy, prediction time, and confusion matrix are
+  displayed.
+
+
+5. src/main/java/evaluation/Evaluator.java
+------------------------------------------
+What changed:
+- Simplified the class comment.
+- Used System.nanoTime() for elapsed-time measurement.
+- Added validation that class labels must exist.
+- Added evaluatedCount and skippedCount.
+- Accuracy is now calculated using only evaluated records.
+- Records with unknown actual or predicted labels are skipped instead of being
+  placed into the confusion matrix incorrectly.
+- Console output now uses the formatted time text from EvaluationResult.
+
+Why it changed:
+- System.nanoTime() is better for measuring elapsed time than
+  System.currentTimeMillis().
+- If a test label is unknown because it was not present in training, counting it
+  in the denominator while not adding it to the confusion matrix is inconsistent.
+
+How to explain it to the professor:
+"Evaluator is independent of the algorithm. It trains the classifier, runs
+predictions on the test data, fills the confusion matrix, and calculates
+accuracy from the records that can be evaluated."
+
+How to test:
+- Run KNN and Decision Tree.
+- Check that accuracy and confusion matrix are displayed.
+- If skipped records exist, check that the UI reports them.
+
+
+6. src/main/java/model/EvaluationResult.java
+--------------------------------------------
+What changed:
+- Added evaluatedCount and skippedCount fields.
+- Added getTotalTestCount.
+- Added getTrainingTimeText and getPredictionTimeText.
+- Added formatElapsedTime so 0 ms is displayed as "< 1 ms".
+- Updated getSummary to use the shared formatted time text.
+
+Why it changed:
+- Displaying "0 ms" is misleading because the operation took some time, but less
+  than one millisecond.
+- Keeping formatting inside EvaluationResult makes the UI and console consistent.
+
+How to explain it to the professor:
+"EvaluationResult is only a data container for the evaluation output. It stores
+accuracy, timing, confusion matrix, and how many records were evaluated or
+skipped."
+
+How to test:
+- Run a model.
+- Check the results panel.
+- Fast operations should show "< 1 ms" instead of "0 ms".
+
+
+7. src/main/java/ui/ComparisonChartPanel.java
+---------------------------------------------
+What changed:
+- Simplified the class comment.
+- Split chart drawing into smaller methods:
+  - drawAccuracyBars
+  - drawPredictionTimeBars
+  - drawGrid
+  - drawLegend
+- The prediction-time chart label now uses EvaluationResult.getPredictionTimeText.
+- The chart title was changed to "Accuracy and Prediction Time".
+
+Why it changed:
+- The chart drawing code is easier to follow when accuracy and time bars are
+  drawn in separate methods.
+- The chart now uses the same "< 1 ms" formatting as the text results.
+
+How to explain it to the professor:
+"This class does not calculate model results. It only draws the accuracy and
+prediction-time values that were already calculated by Evaluator."
+
+How to test:
+- Click Compare Both.
+- Confirm that both accuracy bars and prediction-time bars are displayed.
+- Confirm fast prediction time is shown as "< 1 ms" when applicable.
+
+
+8. src/main/java/ui/MainFrame.java
+----------------------------------
+What changed:
+- Cleaned broken UI text caused by encoding problems.
+- Kept the same UI workflow:
+  - browse file
+  - load data
+  - run selected model
+  - compare both
+- Added isDataReady helper.
+- Result display now shows:
+  - correctly classified count
+  - evaluated test rows
+  - total test rows
+  - skipped test rows, if any
+- Comparison conclusion text was made simpler and clearer.
+
+Why it changed:
+- The UI output is what will be seen during a presentation, so it should be
+  readable and not contain broken symbols.
+- Showing evaluated rows and skipped rows makes the accuracy calculation easier
+  to explain.
+
+How to explain it to the professor:
+"MainFrame controls the Swing interface. It coordinates loading the data,
+preprocessing it, running the selected classifier, and showing the result. The
+actual classifier logic is still inside the classifier package."
+
+How to test:
+- Run the application.
+- Load the Excel file.
+- Run KNN.
+- Run Decision Tree.
+- Run Compare Both.
+- Confirm the text panel, confusion matrix, and chart all update.
+
+
+Build Verification
+------------------
+Command used:
+.\apache-maven-3.9.6\bin\mvn.cmd -q -DskipTests package
+
+Result:
+Build completed successfully.
+
+
+Important Notes
+---------------
+- No machine learning libraries were added.
+- KNN and Decision Tree algorithms were not replaced.
+- The project was not rewritten from scratch.
+- Changes were focused on readability, correctness, and presentation clarity.
+- The "0 ms" display was replaced with "< 1 ms" through shared formatting.
