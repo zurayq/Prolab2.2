@@ -14,9 +14,6 @@ import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Draws a simple comparison chart for accuracy and prediction time.
- */
 public class ComparisonChartPanel extends JPanel {
 
     private static final Color COLOR_KNN = new Color(70, 130, 180);

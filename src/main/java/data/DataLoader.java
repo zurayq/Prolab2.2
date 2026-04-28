@@ -12,34 +12,21 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Reads the Excel spreadsheet and converts valid rows into SaleRecord objects.
- * This class only handles file reading and row parsing.
- */
 public class DataLoader {
 
-    private static final int COL_CLIENTCODE = 9;
-    private static final int COL_GENDER = 17;
-    private static final int COL_BRAND = 11;
-    private static final int COL_LINENET = 8;
-    private static final int COL_AMOUNT = 5;
-    private static final int COL_CATEGORY1 = 12;
-
     private static final int MIN_NON_NULL_CELLS = 5;
-    private static final String UNKNOWN_BRAND = "UNKNOWN";
+    private static final String UNKNOWN_CITY = "UNKNOWN";
 
     private int totalRowsRead = 0;
     private int skippedRows = 0;
     private int loadedRows = 0;
+    private final DataFormatter formatter = new DataFormatter();
+    private Map<String, Integer> kolonlar = new HashMap<>();
 
-    private final DataFormatter dataFormatter = new DataFormatter();
-
-    /**
-     * Loads the first sheet of the Excel file.
-     * Blank rows and rows missing required fields are skipped.
-     */
     public List<SaleRecord> loadFile(File file) throws Exception {
         List<SaleRecord> records = new ArrayList<>();
 
@@ -51,13 +38,13 @@ public class DataLoader {
              Workbook workbook = new XSSFWorkbook(fis)) {
 
             Sheet sheet = workbook.getSheetAt(0);
+            kolonlar = readHeader(sheet.getRow(0));
 
-            // Row 0 is the header row.
             for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
                 Row row = sheet.getRow(rowIndex);
                 totalRowsRead++;
 
-                if (shouldSkipRow(row)) {
+                if (row == null || countNonBlankCells(row) < MIN_NON_NULL_CELLS) {
                     skippedRows++;
                     continue;
                 }
@@ -80,40 +67,61 @@ public class DataLoader {
         return records;
     }
 
-    private SaleRecord parseRow(Row row) {
-        try {
-            String gender = getCellAsString(row, COL_GENDER);
-            String brand = getCellAsString(row, COL_BRAND);
-            String clientCode = getCellAsString(row, COL_CLIENTCODE);
-            String category1 = getCellAsString(row, COL_CATEGORY1);
-
-            if (isBlank(gender) || isBlank(category1)) {
-                return null;
-            }
-            if (isBlank(brand)) {
-                brand = UNKNOWN_BRAND;
-            }
-
-            double lineNet = getCellAsDouble(row, COL_LINENET);
-            double amount = getCellAsDouble(row, COL_AMOUNT);
-            if (Double.isNaN(lineNet) || Double.isNaN(amount)) {
-                return null;
-            }
-
-            return new SaleRecord(clientCode, gender, brand, lineNet, amount, category1);
-        } catch (Exception e) {
-            return null;
+    private Map<String, Integer> readHeader(Row header) {
+        Map<String, Integer> map = new HashMap<>();
+        if (header == null) {
+            return map;
         }
+
+        for (Cell cell : header) {
+            String name = formatter.formatCellValue(cell).trim().toUpperCase();
+            if (!name.isEmpty()) {
+                map.put(name, cell.getColumnIndex());
+            }
+        }
+        return map;
     }
 
-    private boolean shouldSkipRow(Row row) {
-        return row == null || countNonBlankCells(row) < MIN_NON_NULL_CELLS;
+    private SaleRecord parseRow(Row row) {
+        String clientCode = getString(row, column("CLIENTCODE", 9));
+        String gender = getString(row, column("GENDER", 17));
+        String city = getString(row, columnAny(new String[]{"CITY", "CITY_NAME", "SEHIR", "IL"}, -1));
+        String category = getString(row, column("CATEGORY_NAME1", 12));
+
+        if (isBlank(gender) || isBlank(category)) {
+            return null;
+        }
+        if (isBlank(city)) {
+            city = UNKNOWN_CITY;
+        }
+
+        double age = getDouble(row, columnAny(new String[]{"AGE", "YAS"}, -1));
+        double lineNetTotal = getDouble(row, column("LINENETTOTAL", 7));
+
+        if (Double.isNaN(lineNetTotal)) {
+            return null;
+        }
+
+        return new SaleRecord(clientCode, age, gender, city, lineNetTotal, category);
+    }
+
+    private int column(String name, int fallback) {
+        return kolonlar.getOrDefault(name, fallback);
+    }
+
+    private int columnAny(String[] names, int fallback) {
+        for (String name : names) {
+            if (kolonlar.containsKey(name)) {
+                return kolonlar.get(name);
+            }
+        }
+        return fallback;
     }
 
     private int countNonBlankCells(Row row) {
         int count = 0;
         for (Cell cell : row) {
-            String value = dataFormatter.formatCellValue(cell).trim();
+            String value = formatter.formatCellValue(cell).trim();
             if (!value.isEmpty()) {
                 count++;
             }
@@ -121,17 +129,25 @@ public class DataLoader {
         return count;
     }
 
-    private String getCellAsString(Row row, int colIndex) {
+    private String getString(Row row, int colIndex) {
+        if (colIndex < 0) {
+            return null;
+        }
+
         Cell cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (cell == null) {
             return null;
         }
 
-        String value = dataFormatter.formatCellValue(cell).trim();
+        String value = formatter.formatCellValue(cell).trim();
         return value.isEmpty() ? null : value;
     }
 
-    private double getCellAsDouble(Row row, int colIndex) {
+    private double getDouble(Row row, int colIndex) {
+        if (colIndex < 0) {
+            return Double.NaN;
+        }
+
         Cell cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (cell == null) {
             return Double.NaN;
@@ -142,7 +158,7 @@ public class DataLoader {
         }
         if (cell.getCellType() == CellType.STRING) {
             try {
-                return Double.parseDouble(cell.getStringCellValue().trim());
+                return Double.parseDouble(cell.getStringCellValue().trim().replace(",", "."));
             } catch (NumberFormatException e) {
                 return Double.NaN;
             }

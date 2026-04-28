@@ -7,9 +7,6 @@ import model.ProcessedRecord;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Trains a classifier, predicts the test records, and computes metrics.
- */
 public class Evaluator {
 
     public EvaluationResult evaluate(IClassifier classifier,
@@ -21,13 +18,13 @@ public class Evaluator {
             throw new IllegalArgumentException("At least one class label is required for evaluation.");
         }
 
-        int numberOfClasses = classLabels.length;
+        int classCount = classLabels.length;
 
         long trainStart = System.nanoTime();
         classifier.train(trainingData);
         long trainingTimeMs = elapsedMillisSince(trainStart);
 
-        int[][] confusionMatrix = new int[numberOfClasses][numberOfClasses];
+        int[][] confusionMatrix = new int[classCount][classCount];
         int correctCount = 0;
         int evaluatedCount = 0;
         int skippedCount = 0;
@@ -38,7 +35,7 @@ public class Evaluator {
             int predicted = classifier.predict(testRecord);
             int actual = testRecord.getLabel();
 
-            if (isKnownLabel(actual, numberOfClasses) && isKnownLabel(predicted, numberOfClasses)) {
+            if (isKnownLabel(actual, classCount) && isKnownLabel(predicted, classCount)) {
                 confusionMatrix[actual][predicted]++;
                 evaluatedCount++;
 
@@ -68,8 +65,8 @@ public class Evaluator {
         return result;
     }
 
-    private boolean isKnownLabel(int label, int numberOfClasses) {
-        return label >= 0 && label < numberOfClasses;
+    private boolean isKnownLabel(int label, int classCount) {
+        return label >= 0 && label < classCount;
     }
 
     private long elapsedMillisSince(long startNanos) {

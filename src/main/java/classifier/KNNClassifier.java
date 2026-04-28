@@ -1,18 +1,11 @@
 package classifier;
 
+import model.ProcessedRecord;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import model.ProcessedRecord;
-
-/**
- * K-Nearest Neighbors from scratch.
- *
- * Training stores the records. Prediction computes the distance from the
- * test record to every training record, sorts by distance, and returns the
- * majority label among the nearest K records.
- */
 public class KNNClassifier extends BaseClassifier {
 
     public static final int DEFAULT_K = 5;
@@ -47,26 +40,26 @@ public class KNNClassifier extends BaseClassifier {
             throw new IllegalStateException("KNN must be trained before prediction.");
         }
 
-        List<Neighbor> neighbors = findNeighbors(record);
-        int neighborsToVote = Math.min(k, neighbors.size());
+        List<Neighbor> komsular = findNeighbors(record);
+        int voteCount = Math.min(k, komsular.size());
 
         List<Integer> labels = new ArrayList<>();
-        for (int i = 0; i < neighborsToVote; i++) {
-            labels.add(neighbors.get(i).label);
+        for (int i = 0; i < voteCount; i++) {
+            labels.add(komsular.get(i).label);
         }
 
         return majorityVote(labels);
     }
 
     private List<Neighbor> findNeighbors(ProcessedRecord record) {
-        List<Neighbor> neighbors = new ArrayList<>();
+        List<Neighbor> komsular = new ArrayList<>();
         for (ProcessedRecord trainRecord : trainingData) {
             double distance = computeDistance(record.getFeatures(), trainRecord.getFeatures());
-            neighbors.add(new Neighbor(distance, trainRecord.getLabel()));
+            komsular.add(new Neighbor(distance, trainRecord.getLabel()));
         }
 
-        neighbors.sort(Comparator.comparingDouble(neighbor -> neighbor.distance));
-        return neighbors;
+        komsular.sort(Comparator.comparingDouble(neighbor -> neighbor.distance));
+        return komsular;
     }
 
     private double computeDistance(double[] featuresA, double[] featuresB) {
@@ -74,12 +67,12 @@ public class KNNClassifier extends BaseClassifier {
             throw new IllegalArgumentException("Feature vectors must have the same length.");
         }
 
-        double sumOfSquares = 0.0;
+        double toplam = 0.0;
         for (int i = 0; i < featuresA.length; i++) {
-            double difference = featuresA[i] - featuresB[i];
-            sumOfSquares += difference * difference;
+            double fark = featuresA[i] - featuresB[i];
+            toplam += fark * fark;
         }
-        return Math.sqrt(sumOfSquares);
+        return Math.sqrt(toplam);
     }
 
     @Override

@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Stores the metrics produced after evaluating one classifier.
- */
 public class EvaluationResult {
 
     private final String classifierName;
