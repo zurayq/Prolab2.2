@@ -20,4 +20,4 @@ qa-build/
 *.xls
 
 .DS_Store
-Thumbs.db
+Thumbs.dbinspect_xlsx.py
