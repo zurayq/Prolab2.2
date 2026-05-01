@@ -10,77 +10,77 @@ import java.util.concurrent.TimeUnit;
 public class Evaluator {
 
     public EvaluationResult evaluate(IClassifier classifier,
-                                     List<ProcessedRecord> trainingData,
-                                     List<ProcessedRecord> testData,
-                                     String[] classLabels) {
+                                     List<ProcessedRecord> trainingdata,
+                                     List<ProcessedRecord> testdata,
+                                     String[] classlabels) {
 
-        if (classLabels == null || classLabels.length == 0) {
+        if (classlabels == null || classlabels.length == 0) {
             throw new IllegalArgumentException("At least one class label is required for evaluation.");
         }
 
-        int classCount = classLabels.length;
+        int classcount = classlabels.length;
 
-        long trainStart = System.nanoTime();
-        classifier.train(trainingData);
-        long trainingTimeMs = elapsedMillisSince(trainStart);
+        long trainstart = System.nanoTime();
+        classifier.train(trainingdata);
+        long trainingtimems = elapsedMillisSince(trainstart);
 
-        int[][] confusionMatrix = new int[classCount][classCount];
-        int correctCount = 0;
-        int evaluatedCount = 0;
-        int skippedCount = 0;
+        int[][] confusionmatrix = new int[classcount][classcount];
+        int correctcount = 0;
+        int evaluatedcount = 0;
+        int skippedcount = 0;
 
-        long predictStart = System.nanoTime();
+        long predictstart = System.nanoTime();
 
-        for (ProcessedRecord testRecord : testData) {
-            int predicted = classifier.predict(testRecord);
-            int actual = testRecord.getLabel();
+        for (ProcessedRecord testrecord : testdata) {
+            int predicted = classifier.predict(testrecord);
+            int actual = testrecord.getLabel();
 
-            if (isKnownLabel(actual, classCount) && isKnownLabel(predicted, classCount)) {
-                confusionMatrix[actual][predicted]++;
-                evaluatedCount++;
+            if (isKnownLabel(actual, classcount) && isKnownLabel(predicted, classcount)) {
+                confusionmatrix[actual][predicted]++;
+                evaluatedcount++;
 
                 if (predicted == actual) {
-                    correctCount++;
+                    correctcount++;
                 }
             } else {
-                skippedCount++;
+                skippedcount++;
             }
         }
 
-        long predictionTimeMs = elapsedMillisSince(predictStart);
-        double accuracy = evaluatedCount == 0 ? 0.0 : (double) correctCount / evaluatedCount;
+        long predictiontimems = elapsedMillisSince(predictstart);
+        double accuracy = evaluatedcount == 0 ? 0.0 : (double) correctcount / evaluatedcount;
 
         EvaluationResult result = new EvaluationResult(
                 classifier.getName(),
                 accuracy,
-                confusionMatrix,
-                classLabels,
-                evaluatedCount,
-                skippedCount,
-                trainingTimeMs,
-                predictionTimeMs
+                confusionmatrix,
+                classlabels,
+                evaluatedcount,
+                skippedcount,
+                trainingtimems,
+                predictiontimems
         );
 
         printSummary(result);
         return result;
     }
 
-    private boolean isKnownLabel(int label, int classCount) {
-        return label >= 0 && label < classCount;
+    private boolean isKnownLabel(int label, int classcount) {
+        return label >= 0 && label < classcount;
     }
 
-    private long elapsedMillisSince(long startNanos) {
-        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
+    private long elapsedMillisSince(long startnanos) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startnanos);
     }
 
     private void printSummary(EvaluationResult result) {
         StringBuilder message = new StringBuilder();
         message.append("[Evaluator] ").append(result.getClassifierName());
-        message.append(" -> Accuracy=").append(String.format("%.2f%%", result.getAccuracy() * 100));
-        message.append(", Train=").append(result.getTrainingTimeText());
-        message.append(", Predict=").append(result.getPredictionTimeText());
+        message.append(" accuracy=").append(String.format("%.2f%%", result.getAccuracy() * 100));
+        message.append(", training=").append(result.getTrainingTimeText());
+        message.append(", prediction=").append(result.getPredictionTimeText());
         if (result.getSkippedCount() > 0) {
-            message.append(", Skipped=").append(result.getSkippedCount());
+            message.append(", skipped=").append(result.getSkippedCount());
         }
         System.out.println(message);
     }

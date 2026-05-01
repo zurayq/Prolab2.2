@@ -8,10 +8,10 @@ import java.util.List;
 
 public class KNNClassifier extends BaseClassifier {
 
-    public static final int DEFAULT_K = 5;
+    public static final int defaultk = 5;
 
     private int k;
-    private List<ProcessedRecord> trainingData = new ArrayList<>();
+    private List<ProcessedRecord> trainingdata = new ArrayList<>();
 
     public KNNClassifier(int k) {
         if (k < 1) {
@@ -21,58 +21,58 @@ public class KNNClassifier extends BaseClassifier {
     }
 
     public KNNClassifier() {
-        this(DEFAULT_K);
+        this(defaultk);
     }
 
     @Override
-    public void train(List<ProcessedRecord> trainingData) {
-        if (trainingData == null || trainingData.isEmpty()) {
+    public void train(List<ProcessedRecord> trainingdata) {
+        if (trainingdata == null || trainingdata.isEmpty()) {
             throw new IllegalArgumentException("KNN needs at least one training record.");
         }
 
-        this.trainingData = new ArrayList<>(trainingData);
-        System.out.println("[KNN] Training complete. Stored " + this.trainingData.size() + " records. K=" + k);
+        this.trainingdata = new ArrayList<>(trainingdata);
+        System.out.println("[KNN] Training complete. Stored " + this.trainingdata.size() + " records. K=" + k);
     }
 
     @Override
     public int predict(ProcessedRecord record) {
-        if (trainingData.isEmpty()) {
+        if (trainingdata.isEmpty()) {
             throw new IllegalStateException("KNN must be trained before prediction.");
         }
 
-        List<Neighbor> komsular = findNeighbors(record);
-        int voteCount = Math.min(k, komsular.size());
+        List<Neighbor> neibors = findNeighbors(record);
+        int votecount = Math.min(k, neibors.size());
 
         List<Integer> labels = new ArrayList<>();
-        for (int i = 0; i < voteCount; i++) {
-            labels.add(komsular.get(i).label);
+        for (int i = 0; i < votecount; i++) {
+            labels.add(neibors.get(i).label);
         }
 
         return majorityVote(labels);
     }
 
     private List<Neighbor> findNeighbors(ProcessedRecord record) {
-        List<Neighbor> komsular = new ArrayList<>();
-        for (ProcessedRecord trainRecord : trainingData) {
-            double distance = computeDistance(record.getFeatures(), trainRecord.getFeatures());
-            komsular.add(new Neighbor(distance, trainRecord.getLabel()));
+        List<Neighbor> neibors = new ArrayList<>();
+        for (ProcessedRecord trainrecord : trainingdata) {
+            double distance = computeDistance(record.getFeatures(), trainrecord.getFeatures());
+            neibors.add(new Neighbor(distance, trainrecord.getLabel()));
         }
 
-        komsular.sort(Comparator.comparingDouble(neighbor -> neighbor.distance));
-        return komsular;
+        neibors.sort(Comparator.comparingDouble(neighbor -> neighbor.distance));
+        return neibors;
     }
 
-    private double computeDistance(double[] featuresA, double[] featuresB) {
-        if (featuresA.length != featuresB.length) {
+    private double computeDistance(double[] featuresa, double[] featuresb) {
+        if (featuresa.length != featuresb.length) {
             throw new IllegalArgumentException("Feature vectors must have the same length.");
         }
 
-        double toplam = 0.0;
-        for (int i = 0; i < featuresA.length; i++) {
-            double fark = featuresA[i] - featuresB[i];
-            toplam += fark * fark;
+        double sum = 0.0;
+        for (int i = 0; i < featuresa.length; i++) {
+            double diff = featuresa[i] - featuresb[i];
+            sum += diff * diff;
         }
-        return Math.sqrt(toplam);
+        return Math.sqrt(sum);
     }
 
     @Override

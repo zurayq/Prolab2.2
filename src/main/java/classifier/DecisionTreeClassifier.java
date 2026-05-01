@@ -4,37 +4,38 @@ import model.DecisionTreeNode;
 import model.ProcessedRecord;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 public class DecisionTreeClassifier extends BaseClassifier {
 
-    public static final int DEFAULT_MAX_DEPTH = 10;
-    private static final int MIN_SAMPLES_TO_SPLIT = 5;
+    public static final int defaultmaxdepth = 10;
+    private static final int minsamplestosplit = 5;
 
-    private int maxDepth;
+    private int maxdepth;
     private DecisionTreeNode root;
 
-    public DecisionTreeClassifier(int maxDepth) {
-        if (maxDepth < 1) {
+    public DecisionTreeClassifier(int maxdepth) {
+        if (maxdepth < 1) {
             throw new IllegalArgumentException("maxDepth must be at least 1.");
         }
-        this.maxDepth = maxDepth;
+        this.maxdepth = maxdepth;
     }
 
     public DecisionTreeClassifier() {
-        this(DEFAULT_MAX_DEPTH);
+        this(defaultmaxdepth);
     }
 
     @Override
-    public void train(List<ProcessedRecord> trainingData) {
-        if (trainingData == null || trainingData.isEmpty()) {
+    public void train(List<ProcessedRecord> trainingdata) {
+        if (trainingdata == null || trainingdata.isEmpty()) {
             throw new IllegalArgumentException("Decision Tree needs at least one training record.");
         }
 
-        root = buildTree(trainingData, 0);
-        System.out.println("[Decision Tree] Tree built. maxDepth=" + maxDepth);
+        root = buildTree(trainingdata, 0);
+        System.out.println("[Decision Tree] Tree built. maxDepth=" + maxdepth);
     }
 
     @Override
@@ -67,39 +68,39 @@ public class DecisionTreeClassifier extends BaseClassifier {
             return createLeaf(records);
         }
 
-        SplitResult split = splitRecords(records, best.featureIndex, best.threshold);
+        SplitResult split = splitRecords(records, best.featureindex, best.threshold);
         if (!split.isUsable()) {
             return createLeaf(records);
         }
 
-        DecisionTreeNode node = new DecisionTreeNode(best.featureIndex, best.threshold);
-        node.setLeftChild(buildTree(split.leftRecords, depth + 1));
-        node.setRightChild(buildTree(split.rightRecords, depth + 1));
+        DecisionTreeNode node = new DecisionTreeNode(best.featureindex, best.threshold);
+        node.setLeftChild(buildTree(split.leftrecords, depth + 1));
+        node.setRightChild(buildTree(split.rightrecords, depth + 1));
         return node;
     }
 
     private boolean shouldCreateLeaf(List<ProcessedRecord> records, int depth) {
-        return records.size() < MIN_SAMPLES_TO_SPLIT || depth >= maxDepth || isPure(records);
+        return records.size() < minsamplestosplit || depth >= maxdepth || isPure(records);
     }
 
     private BestSplit findBestSplit(List<ProcessedRecord> records) {
-        int featureCount = records.get(0).getFeatureCount();
-        double bestGini = computeGini(records);
+        int featurecount = records.get(0).getFeatureCount();
+        double bestgini = computeGini(records);
         BestSplit best = null;
 
-        for (int featureIndex = 0; featureIndex < featureCount; featureIndex++) {
-            Set<Double> thresholds = getUniqueValues(records, featureIndex);
+        for (int featureindex = 0; featureindex < featurecount; featureindex++) {
+            Set<Double> thresholds = getCandidateThresholds(records, featureindex);
 
             for (double threshold : thresholds) {
-                SplitResult split = splitRecords(records, featureIndex, threshold);
+                SplitResult split = splitRecords(records, featureindex, threshold);
                 if (!split.isUsable()) {
                     continue;
                 }
 
                 double gini = computeWeightedGini(split, records.size());
-                if (gini < bestGini) {
-                    bestGini = gini;
-                    best = new BestSplit(featureIndex, threshold);
+                if (gini < bestgini) {
+                    bestgini = gini;
+                    best = new BestSplit(featureindex, threshold);
                 }
             }
         }
@@ -107,19 +108,19 @@ public class DecisionTreeClassifier extends BaseClassifier {
         return best;
     }
 
-    private SplitResult splitRecords(List<ProcessedRecord> records, int featureIndex, double threshold) {
-        List<ProcessedRecord> sol = new ArrayList<>();
-        List<ProcessedRecord> sag = new ArrayList<>();
+    private SplitResult splitRecords(List<ProcessedRecord> records, int featureindex, double threshold) {
+        List<ProcessedRecord> left = new ArrayList<>();
+        List<ProcessedRecord> right = new ArrayList<>();
 
         for (ProcessedRecord record : records) {
-            if (record.getFeatures()[featureIndex] <= threshold) {
-                sol.add(record);
+            if (record.getFeatures()[featureindex] <= threshold) {
+                left.add(record);
             } else {
-                sag.add(record);
+                right.add(record);
             }
         }
 
-        return new SplitResult(sol, sag);
+        return new SplitResult(left, right);
     }
 
     private double computeGini(List<ProcessedRecord> records) {
@@ -128,28 +129,40 @@ public class DecisionTreeClassifier extends BaseClassifier {
         }
 
         int total = records.size();
-        double kareToplam = 0.0;
+        double sumsquares = 0.0;
 
         for (int count : countByClass(records).values()) {
-            double oran = (double) count / total;
-            kareToplam += oran * oran;
+            double ratio = (double) count / total;
+            sumsquares += ratio * ratio;
         }
 
-        return 1.0 - kareToplam;
+        return 1.0 - sumsquares;
     }
 
-    private double computeWeightedGini(SplitResult split, int totalRecords) {
-        double leftWeight = (double) split.leftRecords.size() / totalRecords;
-        double rightWeight = (double) split.rightRecords.size() / totalRecords;
-        return leftWeight * computeGini(split.leftRecords) + rightWeight * computeGini(split.rightRecords);
+    private double computeWeightedGini(SplitResult split, int totalrecords) {
+        double leftweight = (double) split.leftrecords.size() / totalrecords;
+        double rightweight = (double) split.rightrecords.size() / totalrecords;
+        return leftweight * computeGini(split.leftrecords) + rightweight * computeGini(split.rightrecords);
     }
 
-    private Set<Double> getUniqueValues(List<ProcessedRecord> records, int featureIndex) {
-        Set<Double> values = new HashSet<>();
+    private Set<Double> getCandidateThresholds(List<ProcessedRecord> records, int featureindex) {
+        List<Double> values = new ArrayList<>();
         for (ProcessedRecord record : records) {
-            values.add(record.getFeatures()[featureIndex]);
+            values.add(record.getFeatures()[featureindex]);
         }
-        return values;
+
+        Collections.sort(values);
+
+        Set<Double> thresholds = new LinkedHashSet<>();
+        for (int i = 1; i < values.size(); i++) {
+            double previous = values.get(i - 1);
+            double current = values.get(i);
+            if (Double.compare(previous, current) != 0) {
+                thresholds.add((previous + current) / 2.0);
+            }
+        }
+
+        return thresholds;
     }
 
     private boolean isPure(List<ProcessedRecord> records) {
@@ -157,9 +170,9 @@ public class DecisionTreeClassifier extends BaseClassifier {
             return true;
         }
 
-        int firstLabel = records.get(0).getLabel();
+        int firstlabel = records.get(0).getLabel();
         for (ProcessedRecord record : records) {
-            if (record.getLabel() != firstLabel) {
+            if (record.getLabel() != firstlabel) {
                 return false;
             }
         }
@@ -173,41 +186,41 @@ public class DecisionTreeClassifier extends BaseClassifier {
 
     @Override
     public String getName() {
-        return "Decision Tree (maxDepth=" + maxDepth + ")";
+        return "Decision Tree (maxDepth=" + maxdepth + ")";
     }
 
     public int getMaxDepth() {
-        return maxDepth;
+        return maxdepth;
     }
 
-    public void setMaxDepth(int maxDepth) {
-        if (maxDepth < 1) {
+    public void setMaxDepth(int maxdepth) {
+        if (maxdepth < 1) {
             throw new IllegalArgumentException("maxDepth must be at least 1.");
         }
-        this.maxDepth = maxDepth;
+        this.maxdepth = maxdepth;
     }
 
     private static class BestSplit {
-        private final int featureIndex;
+        private final int featureindex;
         private final double threshold;
 
-        private BestSplit(int featureIndex, double threshold) {
-            this.featureIndex = featureIndex;
+        private BestSplit(int featureindex, double threshold) {
+            this.featureindex = featureindex;
             this.threshold = threshold;
         }
     }
 
     private static class SplitResult {
-        private final List<ProcessedRecord> leftRecords;
-        private final List<ProcessedRecord> rightRecords;
+        private final List<ProcessedRecord> leftrecords;
+        private final List<ProcessedRecord> rightrecords;
 
-        private SplitResult(List<ProcessedRecord> leftRecords, List<ProcessedRecord> rightRecords) {
-            this.leftRecords = leftRecords;
-            this.rightRecords = rightRecords;
+        private SplitResult(List<ProcessedRecord> leftrecords, List<ProcessedRecord> rightrecords) {
+            this.leftrecords = leftrecords;
+            this.rightrecords = rightrecords;
         }
 
         private boolean isUsable() {
-            return !leftRecords.isEmpty() && !rightRecords.isEmpty();
+            return !leftrecords.isEmpty() && !rightrecords.isEmpty();
         }
     }
 }

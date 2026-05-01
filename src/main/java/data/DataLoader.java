@@ -18,50 +18,50 @@ import java.util.Map;
 
 public class DataLoader {
 
-    private static final int MIN_NON_NULL_CELLS = 5;
+    private static final int minnonnullcells = 5;
 
-    private int totalRowsRead = 0;
-    private int skippedRows = 0;
-    private int loadedRows = 0;
+    private int totalrowsread = 0;
+    private int skippedrows = 0;
+    private int loadedrows = 0;
     private final DataFormatter formatter = new DataFormatter();
-    private Map<String, Integer> kolonlar = new HashMap<>();
+    private Map<String, Integer> columnmap = new HashMap<>();
 
     public List<SaleRecord> loadFile(File file) throws Exception {
         List<SaleRecord> records = new ArrayList<>();
 
-        totalRowsRead = 0;
-        skippedRows = 0;
-        loadedRows = 0;
+        totalrowsread = 0;
+        skippedrows = 0;
+        loadedrows = 0;
 
-        try (FileInputStream fis = new FileInputStream(file);
-             Workbook workbook = new XSSFWorkbook(fis)) {
+        try (FileInputStream fileinputstream = new FileInputStream(file);
+             Workbook workbook = new XSSFWorkbook(fileinputstream)) {
 
             Sheet sheet = workbook.getSheetAt(0);
-            kolonlar = readHeader(sheet.getRow(0));
+            columnmap = readHeader(sheet.getRow(0));
 
-            for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-                Row row = sheet.getRow(rowIndex);
-                totalRowsRead++;
+            for (int rowindex = 1; rowindex <= sheet.getLastRowNum(); rowindex++) {
+                Row row = sheet.getRow(rowindex);
+                totalrowsread++;
 
-                if (row == null || countNonBlankCells(row) < MIN_NON_NULL_CELLS) {
-                    skippedRows++;
+                if (row == null || countNonBlankCells(row) < minnonnullcells) {
+                    skippedrows++;
                     continue;
                 }
 
                 SaleRecord record = parseRow(row);
                 if (record == null) {
-                    skippedRows++;
+                    skippedrows++;
                     continue;
                 }
 
                 records.add(record);
-                loadedRows++;
+                loadedrows++;
             }
         }
 
-        System.out.println("[DataLoader] Total rows scanned : " + totalRowsRead);
-        System.out.println("[DataLoader] Skipped rows       : " + skippedRows);
-        System.out.println("[DataLoader] Loaded records     : " + loadedRows);
+        System.out.println("[DataLoader] Total rows scanned : " + totalrowsread);
+        System.out.println("[DataLoader] Skipped rows       : " + skippedrows);
+        System.out.println("[DataLoader] Loaded records     : " + loadedrows);
 
         return records;
     }
@@ -82,35 +82,26 @@ public class DataLoader {
     }
 
     private SaleRecord parseRow(Row row) {
-        String clientCode = getString(row, column("CLIENTCODE", 9));
+        String clientcode = getString(row, column("CLIENTCODE", 9));
         String gender = getString(row, column("GENDER", 17));
-        String brandCode = getString(row, column("BRANDCODE", 10));
+        String brandcode = getString(row, column("BRANDCODE", 10));
         String brand = getString(row, column("BRAND", 11));
         String category = getString(row, column("CATEGORY_NAME1", 12));
-        double lineNetTotal = getDouble(row, column("LINENETTOTAL", 7));
+        double linenettotal = getDouble(row, column("LINENETTOTAL", 7));
 
         if (isBlank(gender) || isBlank(category)) {
             return null;
         }
 
-        if (Double.isNaN(lineNetTotal)) {
+        if (Double.isNaN(linenettotal)) {
             return null;
         }
 
-        return new SaleRecord(clientCode, gender, brandCode, brand, lineNetTotal, category);
+        return new SaleRecord(clientcode, gender, brandcode, brand, linenettotal, category);
     }
 
     private int column(String name, int fallback) {
-        return kolonlar.getOrDefault(name, fallback);
-    }
-
-    private int columnAny(String[] names, int fallback) {
-        for (String name : names) {
-            if (kolonlar.containsKey(name)) {
-                return kolonlar.get(name);
-            }
-        }
-        return fallback;
+        return columnmap.getOrDefault(name, fallback);
     }
 
     private int countNonBlankCells(Row row) {
@@ -124,12 +115,12 @@ public class DataLoader {
         return count;
     }
 
-    private String getString(Row row, int colIndex) {
-        if (colIndex < 0) {
+    private String getString(Row row, int colindex) {
+        if (colindex < 0) {
             return null;
         }
 
-        Cell cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        Cell cell = row.getCell(colindex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (cell == null) {
             return null;
         }
@@ -138,12 +129,12 @@ public class DataLoader {
         return value.isEmpty() ? null : value;
     }
 
-    private double getDouble(Row row, int colIndex) {
-        if (colIndex < 0) {
+    private double getDouble(Row row, int colindex) {
+        if (colindex < 0) {
             return Double.NaN;
         }
 
-        Cell cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        Cell cell = row.getCell(colindex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (cell == null) {
             return Double.NaN;
         }
@@ -166,14 +157,14 @@ public class DataLoader {
     }
 
     public int getTotalRowsRead() {
-        return totalRowsRead;
+        return totalrowsread;
     }
 
     public int getSkippedRows() {
-        return skippedRows;
+        return skippedrows;
     }
 
     public int getLoadedRows() {
-        return loadedRows;
+        return loadedrows;
     }
 }

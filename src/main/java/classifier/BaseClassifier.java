@@ -14,20 +14,20 @@ public abstract class BaseClassifier implements IClassifier {
             counts.put(label, counts.getOrDefault(label, 0) + 1);
         }
 
-        int bestLabel = -1;
-        int bestCount = -1;
+        int bestlabel = -1;
+        int bestcount = -1;
 
         for (Map.Entry<Integer, Integer> entry : counts.entrySet()) {
             int label = entry.getKey();
             int count = entry.getValue();
 
-            if (count > bestCount || (count == bestCount && label < bestLabel)) {
-                bestLabel = label;
-                bestCount = count;
+            if (count > bestcount || (count == bestcount && label < bestlabel)) {
+                bestlabel = label;
+                bestcount = count;
             }
         }
 
-        return bestLabel;
+        return bestlabel;
     }
 
     protected Map<Integer, Integer> countByClass(List<ProcessedRecord> records) {
@@ -42,19 +42,19 @@ public abstract class BaseClassifier implements IClassifier {
     protected int majorityClass(List<ProcessedRecord> records) {
         Map<Integer, Integer> counts = countByClass(records);
 
-        int bestLabel = -1;
-        int bestCount = -1;
+        int bestlabel = -1;
+        int bestcount = -1;
 
         for (Map.Entry<Integer, Integer> entry : counts.entrySet()) {
             int label = entry.getKey();
             int count = entry.getValue();
 
-            if (count > bestCount || (count == bestCount && label < bestLabel)) {
-                bestLabel = label;
-                bestCount = count;
+            if (count > bestcount || (count == bestcount && label < bestlabel)) {
+                bestlabel = label;
+                bestcount = count;
             }
         }
 
-        return bestLabel;
+        return bestlabel;
     }
 }

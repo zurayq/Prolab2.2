@@ -4,12 +4,12 @@ public class ProcessedRecord {
 
     private final double[] features;
     private final int label;
-    private final String originalCategoryLabel;
+    private final String originalcategorylabel;
 
-    public ProcessedRecord(double[] features, int label, String originalCategoryLabel) {
+    public ProcessedRecord(double[] features, int label, String originalcategorylabel) {
         this.features = features;
         this.label = label;
-        this.originalCategoryLabel = originalCategoryLabel;
+        this.originalcategorylabel = originalcategorylabel;
     }
 
     public double[] getFeatures() {
@@ -21,7 +21,7 @@ public class ProcessedRecord {
     }
 
     public String getOriginalCategoryLabel() {
-        return originalCategoryLabel;
+        return originalcategorylabel;
     }
 
     public int getFeatureCount() {

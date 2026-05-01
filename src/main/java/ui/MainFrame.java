@@ -38,28 +38,28 @@ import java.util.List;
 
 public class MainFrame extends JFrame {
 
-    private static final String MODEL_KNN = "KNN";
-    private static final String MODEL_DT = "Decision Tree";
-    private static final String MODEL_COMPARE = "Compare Both";
+    private static final String modelknn = "KNN";
+    private static final String modeldt = "Decision Tree";
+    private static final String modelcompare = "compare both";
 
-    private JTextField filePathField;
-    private JComboBox<String> modelSelector;
-    private JSpinner kSpinner;
-    private JSpinner maxDepthSpinner;
-    private JSpinner seedSpinner;
-    private JButton browseButton;
-    private JButton loadButton;
-    private JButton runButton;
-    private JButton compareButton;
-    private ResultPanel resultPanel;
+    private JTextField filepathfield;
+    private JComboBox<String> modelselector;
+    private JSpinner kspinner;
+    private JSpinner maxdepthspinner;
+    private JSpinner seedspinner;
+    private JButton browsebutton;
+    private JButton loadbutton;
+    private JButton runbutton;
+    private JButton comparebutton;
+    private ResultPanel resultpanel;
 
-    private File loadedFile;
-    private List<SaleRecord> validRecords;
-    private DataSplit dataSplit;
-    private PreProcessor preProcessor;
-    private List<ProcessedRecord> trainProcessed;
-    private List<ProcessedRecord> testProcessed;
-    private String[] classLabels;
+    private File loadedfile;
+    private List<SaleRecord> validrecords;
+    private DataSplit datasplit;
+    private PreProcessor preprocessor;
+    private List<ProcessedRecord> trainprocessed;
+    private List<ProcessedRecord> testprocessed;
+    private String[] classlabels;
 
     public MainFrame() {
         setTitle("KNN vs Decision Tree - Market Sales Kocaeli");
@@ -72,157 +72,157 @@ public class MainFrame extends JFrame {
     }
 
     private void buildUI() {
-        JPanel mainPanel = new JPanel(new BorderLayout(8, 8));
-        mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel mainpanel = new JPanel(new BorderLayout(8, 8));
+        mainpanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        mainPanel.add(buildTopBar(), BorderLayout.NORTH);
-        mainPanel.add(buildLeftControls(), BorderLayout.WEST);
+        mainpanel.add(buildTopBar(), BorderLayout.NORTH);
+        mainpanel.add(buildLeftControls(), BorderLayout.WEST);
 
-        resultPanel = new ResultPanel();
-        mainPanel.add(resultPanel, BorderLayout.CENTER);
+        resultpanel = new ResultPanel();
+        mainpanel.add(resultpanel, BorderLayout.CENTER);
 
-        setContentPane(mainPanel);
+        setContentPane(mainpanel);
     }
 
     private JPanel buildTopBar() {
         JPanel panel = new JPanel(new BorderLayout(6, 0));
-        panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Dataset File"));
+        panel.setBorder(javax.swing.BorderFactory.createTitledBorder("dataset file"));
 
-        filePathField = new JTextField("No file selected", 40);
-        filePathField.setEditable(false);
-        filePathField.setForeground(Color.GRAY);
+        filepathfield = new JTextField("no file selected", 40);
+        filepathfield.setEditable(false);
+        filepathfield.setForeground(Color.GRAY);
 
-        browseButton = new JButton("Browse...");
-        browseButton.addActionListener(this::onBrowse);
+        browsebutton = new JButton("browse...");
+        browsebutton.addActionListener(this::onBrowse);
 
-        loadButton = new JButton("Load Data");
-        loadButton.setEnabled(false);
-        loadButton.addActionListener(this::onLoadData);
+        loadbutton = new JButton("load data");
+        loadbutton.setEnabled(false);
+        loadbutton.addActionListener(this::onLoadData);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-        buttonPanel.add(browseButton);
-        buttonPanel.add(loadButton);
+        JPanel buttonpanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        buttonpanel.add(browsebutton);
+        buttonpanel.add(loadbutton);
 
-        panel.add(filePathField, BorderLayout.CENTER);
-        panel.add(buttonPanel, BorderLayout.EAST);
+        panel.add(filepathfield, BorderLayout.CENTER);
+        panel.add(buttonpanel, BorderLayout.EAST);
         return panel;
     }
 
     private JPanel buildLeftControls() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Model Settings"));
+        panel.setBorder(javax.swing.BorderFactory.createTitledBorder("model settings"));
         panel.setPreferredSize(new Dimension(200, 0));
 
-        modelSelector = new JComboBox<>(new String[]{MODEL_KNN, MODEL_DT, MODEL_COMPARE});
-        addLabeledRow(panel, "Algorithm:", modelSelector);
+        modelselector = new JComboBox<>(new String[]{modelknn, modeldt, modelcompare});
+        addLabeledRow(panel, "algorithm:", modelselector);
 
-        kSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 50, 1));
-        addLabeledRow(panel, "K (for KNN):", kSpinner);
+        kspinner = new JSpinner(new SpinnerNumberModel(5, 1, 50, 1));
+        addLabeledRow(panel, "K for KNN:", kspinner);
 
-        maxDepthSpinner = new JSpinner(new SpinnerNumberModel(10, 1, 30, 1));
-        addLabeledRow(panel, "Max Depth (DT):", maxDepthSpinner);
+        maxdepthspinner = new JSpinner(new SpinnerNumberModel(10, 1, 30, 1));
+        addLabeledRow(panel, "max depth for Decision Tree:", maxdepthspinner);
 
-        seedSpinner = new JSpinner(new SpinnerNumberModel(42, 0, 9999, 1));
-        addLabeledRow(panel, "Random Seed:", seedSpinner);
+        seedspinner = new JSpinner(new SpinnerNumberModel(42, 0, 9999, 1));
+        addLabeledRow(panel, "random seed:", seedspinner);
 
         panel.add(Box.createVerticalStrut(16));
 
-        runButton = new JButton("Run Selected Model");
-        runButton.setEnabled(false);
-        runButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        runButton.addActionListener(this::onRunModel);
-        panel.add(runButton);
+        runbutton = new JButton("run selected model");
+        runbutton.setEnabled(false);
+        runbutton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        runbutton.addActionListener(this::onRunModel);
+        panel.add(runbutton);
 
         panel.add(Box.createVerticalStrut(8));
 
-        compareButton = new JButton("Compare Both");
-        compareButton.setEnabled(false);
-        compareButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        compareButton.addActionListener(this::onCompare);
-        panel.add(compareButton);
+        comparebutton = new JButton("compare both");
+        comparebutton.setEnabled(false);
+        comparebutton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        comparebutton.addActionListener(this::onCompare);
+        panel.add(comparebutton);
 
         panel.add(Box.createVerticalGlue());
         return panel;
     }
 
-    private void addLabeledRow(JPanel parent, String labelText, JComponent component) {
+    private void addLabeledRow(JPanel parent, String labeltext, JComponent component) {
         JPanel row = new JPanel(new BorderLayout(4, 4));
         row.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        row.add(new JLabel(labelText), BorderLayout.NORTH);
+        row.add(new JLabel(labeltext), BorderLayout.NORTH);
         row.add(component, BorderLayout.CENTER);
         parent.add(row);
     }
 
     private void onBrowse(ActionEvent event) {
         JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Select Excel File (.xlsx)");
+        chooser.setDialogTitle("select Excel file (.xlsx)");
 
         int result = chooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
-            loadedFile = chooser.getSelectedFile();
-            filePathField.setText(loadedFile.getAbsolutePath());
-            filePathField.setForeground(Color.BLACK);
-            loadButton.setEnabled(true);
+            loadedfile = chooser.getSelectedFile();
+            filepathfield.setText(loadedfile.getAbsolutePath());
+            filepathfield.setForeground(Color.BLACK);
+            loadbutton.setEnabled(true);
         }
     }
 
     private void onLoadData(ActionEvent event) {
-        if (loadedFile == null) {
+        if (loadedfile == null) {
             return;
         }
 
         setButtonsEnabled(false);
-        resultPanel.setText("Loading file: " + loadedFile.getName() + "\nPlease wait...\n");
+        resultpanel.setText("loading file: " + loadedfile.getName() + "\nplease wait...\n");
 
         SwingWorker<Void, String> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
-                publish("[1/4] Reading Excel file...\n");
+                publish("[1/4] reading Excel file...\n");
                 DataLoader loader = new DataLoader();
-                List<SaleRecord> rawRecords = loader.loadFile(loadedFile);
-                publish("      Total rows scanned : " + loader.getTotalRowsRead() + "\n");
-                publish("      Skipped rows       : " + loader.getSkippedRows() + "\n");
+                List<SaleRecord> rawrecords = loader.loadFile(loadedfile);
+                publish("      rows scanned : " + loader.getTotalRowsRead() + "\n");
+                publish("      skipped rows : " + loader.getSkippedRows() + "\n");
 
-                publish("[2/4] Validating records...\n");
+                publish("[2/4] checking records...\n");
                 PreProcessor validator = new PreProcessor();
-                validRecords = validator.removeInvalidRecords(rawRecords);
-                publish("      Valid records      : " + validRecords.size() + "\n");
+                validrecords = validator.removeInvalidRecords(rawrecords);
+                publish("      valid records : " + validrecords.size() + "\n");
 
-                int seed = (Integer) seedSpinner.getValue();
-                publish("[3/4] Splitting 80/20 with seed=" + seed + "...\n");
+                int seed = (Integer) seedspinner.getValue();
+                publish("[3/4] splitting 80/20 with seed=" + seed + "...\n");
                 TrainTestSplitter splitter = new TrainTestSplitter();
-                dataSplit = splitter.split(validRecords, seed);
-                publish("      Training set size  : " + dataSplit.getTrainingSize() + "\n");
-                publish("      Test set size      : " + dataSplit.getTestSize() + "\n");
+                datasplit = splitter.split(validrecords, seed);
+                publish("      training size : " + datasplit.getTrainingSize() + "\n");
+                publish("      test size     : " + datasplit.getTestSize() + "\n");
 
-                publish("[4/4] Fitting encoders on training data only...\n");
-                preProcessor = new PreProcessor();
-                preProcessor.fitOnTrainingData(dataSplit.getTrainingData());
-                classLabels = preProcessor.getCategoryLabels();
-                publish("      Categories found   : " + classLabels.length + "\n");
-                publish("      " + String.join(" | ", classLabels) + "\n\n");
+                publish("[4/4] fitting encoders on training data...\n");
+                preprocessor = new PreProcessor();
+                preprocessor.fitOnTrainingData(datasplit.getTrainingData());
+                classlabels = preprocessor.getCategoryLabels();
+                publish("      categories found : " + classlabels.length + "\n");
+                publish("      " + String.join(" | ", classlabels) + "\n\n");
 
-                publish("Transforming training data...\n");
-                trainProcessed = preProcessor.transformAll(dataSplit.getTrainingData());
+                publish("transforming training data...\n");
+                trainprocessed = preprocessor.transformAll(datasplit.getTrainingData());
 
-                publish("Transforming test data...\n");
-                testProcessed = preProcessor.transformAll(dataSplit.getTestData());
+                publish("transforming test data...\n");
+                testprocessed = preprocessor.transformAll(datasplit.getTestData());
 
-                publish("\nOK - Dataset loaded successfully. Ready to run models.\n");
-                publish("\nFeatures used:\n");
+                publish("\ndataset loaded successfully. ready to run models.\n");
+                publish("\nfeatures used:\n");
                 publish("  [0] GENDER        (encoded: E=0.0, K=1.0)\n");
                 publish("  [1] BRAND         (label-encoded, normalized)\n");
                 publish("  [2] LINENETTOTAL  (min-max normalized)\n");
-                publish("\nTarget: CATEGORY_NAME1 (" + classLabels.length + " classes)\n");
+                publish("\ntarget: CATEGORY_NAME1 (" + classlabels.length + " classes)\n");
                 return null;
             }
 
             @Override
             protected void process(java.util.List<String> chunks) {
                 for (String chunk : chunks) {
-                    resultPanel.appendText(chunk);
+                    resultpanel.appendText(chunk);
                 }
             }
 
@@ -230,15 +230,15 @@ public class MainFrame extends JFrame {
             protected void done() {
                 try {
                     get();
-                    runButton.setEnabled(true);
-                    compareButton.setEnabled(true);
-                    loadButton.setEnabled(true);
-                    browseButton.setEnabled(true);
+                    runbutton.setEnabled(true);
+                    comparebutton.setEnabled(true);
+                    loadbutton.setEnabled(true);
+                    browsebutton.setEnabled(true);
                 } catch (Exception ex) {
-                    resultPanel.appendText("\nError loading file: " + ex.getMessage() + "\n");
+                    resultpanel.appendText("\nerror loading file: " + ex.getMessage() + "\n");
                     ex.printStackTrace();
-                    loadButton.setEnabled(true);
-                    browseButton.setEnabled(true);
+                    loadbutton.setEnabled(true);
+                    browsebutton.setEnabled(true);
                 }
             }
         };
@@ -248,33 +248,33 @@ public class MainFrame extends JFrame {
 
     private void onRunModel(ActionEvent event) {
         if (!isDataReady()) {
-            JOptionPane.showMessageDialog(this, "Please load a dataset first.", "No Data", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "please load a dataset first.", "no dataset", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String selectedModel = (String) modelSelector.getSelectedItem();
-        if (MODEL_COMPARE.equals(selectedModel)) {
+        String selectedmodel = (String) modelselector.getSelectedItem();
+        if (modelcompare.equals(selectedmodel)) {
             onCompare(event);
             return;
         }
 
         setButtonsEnabled(false);
-        resultPanel.setText("Running selected model...\n\n");
+        resultpanel.setText("running selected model...\n\n");
 
         SwingWorker<EvaluationResult, String> worker = new SwingWorker<>() {
             @Override
             protected EvaluationResult doInBackground() {
-                IClassifier classifier = buildSelectedClassifier(selectedModel);
-                publish("Running: " + classifier.getName() + "\n\n");
+                IClassifier classifier = buildSelectedClassifier(selectedmodel);
+                publish("running: " + classifier.getName() + "\n\n");
 
                 Evaluator evaluator = new Evaluator();
-                return evaluator.evaluate(classifier, trainProcessed, testProcessed, classLabels);
+                return evaluator.evaluate(classifier, trainprocessed, testprocessed, classlabels);
             }
 
             @Override
             protected void process(java.util.List<String> chunks) {
                 for (String chunk : chunks) {
-                    resultPanel.appendText(chunk);
+                    resultpanel.appendText(chunk);
                 }
             }
 
@@ -284,11 +284,11 @@ public class MainFrame extends JFrame {
                     EvaluationResult result = get();
                     displayResult(result);
 
-                    List<EvaluationResult> singleResult = new ArrayList<>();
-                    singleResult.add(result);
-                    resultPanel.showChart(singleResult);
+                    List<EvaluationResult> singleresult = new ArrayList<>();
+                    singleresult.add(result);
+                    resultpanel.showChart(singleresult);
                 } catch (Exception ex) {
-                    resultPanel.appendText("Error: " + ex.getMessage());
+                    resultpanel.appendText("error: " + ex.getMessage());
                     ex.printStackTrace();
                 }
                 setButtonsEnabled(true);
@@ -300,12 +300,12 @@ public class MainFrame extends JFrame {
 
     private void onCompare(ActionEvent event) {
         if (!isDataReady()) {
-            JOptionPane.showMessageDialog(this, "Please load a dataset first.", "No Data", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "please load a dataset first.", "no dataset", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         setButtonsEnabled(false);
-        resultPanel.setText("Running comparison...\n\n");
+        resultpanel.setText("running comparison...\n\n");
 
         SwingWorker<List<EvaluationResult>, String> worker = new SwingWorker<>() {
             @Override
@@ -313,16 +313,17 @@ public class MainFrame extends JFrame {
                 Evaluator evaluator = new Evaluator();
                 List<EvaluationResult> results = new ArrayList<>();
 
-                int k = (Integer) kSpinner.getValue();
-                int maxDepth = (Integer) maxDepthSpinner.getValue();
+                int k = (Integer) kspinner.getValue();
+                int maxdepth = (Integer) maxdepthspinner.getValue();
 
-                publish("Running KNN (k=" + k + ")...\n");
-                KNNClassifier knn = new KNNClassifier(k);
-                results.add(evaluator.evaluate(knn, trainProcessed, testProcessed, classLabels));
+                List<IClassifier> classifiers = new ArrayList<>();
+                classifiers.add(new KNNClassifier(k));
+                classifiers.add(new DecisionTreeClassifier(maxdepth));
 
-                publish("Running Decision Tree (maxDepth=" + maxDepth + ")...\n");
-                DecisionTreeClassifier decisionTree = new DecisionTreeClassifier(maxDepth);
-                results.add(evaluator.evaluate(decisionTree, trainProcessed, testProcessed, classLabels));
+                for (IClassifier classifier : classifiers) {
+                    publish("running: " + classifier.getName() + "\n");
+                    results.add(evaluator.evaluate(classifier, trainprocessed, testprocessed, classlabels));
+                }
 
                 return results;
             }
@@ -330,7 +331,7 @@ public class MainFrame extends JFrame {
             @Override
             protected void process(java.util.List<String> chunks) {
                 for (String chunk : chunks) {
-                    resultPanel.appendText(chunk);
+                    resultpanel.appendText(chunk);
                 }
             }
 
@@ -338,16 +339,16 @@ public class MainFrame extends JFrame {
             protected void done() {
                 try {
                     List<EvaluationResult> results = get();
-                    resultPanel.setText("=== COMPARISON RESULTS ===\n\n");
+                    resultpanel.setText("comparison results\n\n");
                     for (EvaluationResult result : results) {
-                        resultPanel.appendText(result.getSummary() + "\n");
+                        resultpanel.appendText(result.getSummary() + "\n");
                     }
 
                     appendComparisonConclusion(results);
-                    resultPanel.showConfusionMatrix(results.get(results.size() - 1));
-                    resultPanel.showChart(results);
+                    resultpanel.showConfusionMatrix(results.get(results.size() - 1));
+                    resultpanel.showChart(results);
                 } catch (Exception ex) {
-                    resultPanel.appendText("Error: " + ex.getMessage());
+                    resultpanel.appendText("error: " + ex.getMessage());
                     ex.printStackTrace();
                 }
                 setButtonsEnabled(true);
@@ -358,33 +359,33 @@ public class MainFrame extends JFrame {
     }
 
     private boolean isDataReady() {
-        return trainProcessed != null && testProcessed != null;
+        return trainprocessed != null && testprocessed != null;
     }
 
-    private IClassifier buildSelectedClassifier(String modelName) {
-        int k = (Integer) kSpinner.getValue();
-        int maxDepth = (Integer) maxDepthSpinner.getValue();
+    private IClassifier buildSelectedClassifier(String modelname) {
+        int k = (Integer) kspinner.getValue();
+        int maxdepth = (Integer) maxdepthspinner.getValue();
 
-        if (MODEL_KNN.equals(modelName)) {
+        if (modelknn.equals(modelname)) {
             return new KNNClassifier(k);
         }
-        return new DecisionTreeClassifier(maxDepth);
+        return new DecisionTreeClassifier(maxdepth);
     }
 
     private void displayResult(EvaluationResult result) {
         StringBuilder text = new StringBuilder();
         text.append(result.getSummary()).append("\n");
-        text.append("Correctly classified : ").append(countCorrect(result)).append("\n");
-        text.append("Evaluated test rows  : ").append(result.getEvaluatedCount()).append("\n");
-        text.append("Total test rows      : ").append(result.getTotalTestCount()).append("\n");
+        text.append("correct predictions : ").append(countCorrect(result)).append("\n");
+        text.append("evaluated test rows : ").append(result.getEvaluatedCount()).append("\n");
+        text.append("total test rows     : ").append(result.getTotalTestCount()).append("\n");
 
         if (result.getSkippedCount() > 0) {
-            text.append("Skipped test rows    : ").append(result.getSkippedCount())
+            text.append("skipped test rows   : ").append(result.getSkippedCount())
                     .append(" (class not present in training data)\n");
         }
 
-        resultPanel.setText(text.toString());
-        resultPanel.showConfusionMatrix(result);
+        resultpanel.setText(text.toString());
+        resultpanel.showConfusionMatrix(result);
     }
 
     private int countCorrect(EvaluationResult result) {
@@ -401,31 +402,31 @@ public class MainFrame extends JFrame {
             return;
         }
 
-        EvaluationResult knnResult = results.get(0);
-        EvaluationResult decisionTreeResult = results.get(1);
+        EvaluationResult knnresult = results.get(0);
+        EvaluationResult decisiontreeresult = results.get(1);
 
-        resultPanel.appendText("--- Analysis ---\n");
-        if (knnResult.getAccuracy() > decisionTreeResult.getAccuracy()) {
-            resultPanel.appendText("-> KNN achieved higher accuracy on this dataset.\n");
-        } else if (decisionTreeResult.getAccuracy() > knnResult.getAccuracy()) {
-            resultPanel.appendText("-> Decision Tree achieved higher accuracy on this dataset.\n");
+        resultpanel.appendText("quick result\n");
+        if (knnresult.getAccuracy() > decisiontreeresult.getAccuracy()) {
+            resultpanel.appendText("KNN had higher accuracy on this dataset.\n");
+        } else if (decisiontreeresult.getAccuracy() > knnresult.getAccuracy()) {
+            resultpanel.appendText("Decision Tree had higher accuracy on this dataset.\n");
         } else {
-            resultPanel.appendText("-> Both models achieved the same accuracy.\n");
+            resultpanel.appendText("both models had the same accuracy.\n");
         }
 
-        if (knnResult.getPredictionTimeMs() > decisionTreeResult.getPredictionTimeMs()) {
-            resultPanel.appendText("-> Decision Tree was faster at prediction time.\n");
-        } else if (decisionTreeResult.getPredictionTimeMs() > knnResult.getPredictionTimeMs()) {
-            resultPanel.appendText("-> KNN was faster at prediction time for this run.\n");
+        if (knnresult.getPredictionTimeMs() > decisiontreeresult.getPredictionTimeMs()) {
+            resultpanel.appendText("Decision Tree was faster at prediction time.\n");
+        } else if (decisiontreeresult.getPredictionTimeMs() > knnresult.getPredictionTimeMs()) {
+            resultpanel.appendText("KNN was faster at prediction time for this run.\n");
         } else {
-            resultPanel.appendText("-> Both models had the same measured prediction time.\n");
+            resultpanel.appendText("both models had the same measured prediction time.\n");
         }
     }
 
     private void setButtonsEnabled(boolean enabled) {
-        runButton.setEnabled(enabled);
-        compareButton.setEnabled(enabled);
-        browseButton.setEnabled(enabled);
-        loadButton.setEnabled(enabled);
+        runbutton.setEnabled(enabled);
+        comparebutton.setEnabled(enabled);
+        browsebutton.setEnabled(enabled);
+        loadbutton.setEnabled(enabled);
     }
 }

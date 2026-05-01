@@ -2,56 +2,56 @@ package model;
 
 public class DecisionTreeNode {
 
-    private final boolean isLeaf;
-    private final int predictedClass;
-    private final int splitFeatureIndex;
-    private final double splitThreshold;
-    private DecisionTreeNode leftChild;
-    private DecisionTreeNode rightChild;
+    private final boolean isleaf;
+    private final int predictedclass;
+    private final int splitfeatureindex;
+    private final double splitthreshold;
+    private DecisionTreeNode leftchild;
+    private DecisionTreeNode rightchild;
 
-    public DecisionTreeNode(int predictedClass) {
-        this.isLeaf = true;
-        this.predictedClass = predictedClass;
-        this.splitFeatureIndex = -1;
-        this.splitThreshold = 0.0;
+    public DecisionTreeNode(int predictedclass) {
+        this.isleaf = true;
+        this.predictedclass = predictedclass;
+        this.splitfeatureindex = -1;
+        this.splitthreshold = 0.0;
     }
 
-    public DecisionTreeNode(int splitFeatureIndex, double splitThreshold) {
-        this.isLeaf = false;
-        this.predictedClass = -1;
-        this.splitFeatureIndex = splitFeatureIndex;
-        this.splitThreshold = splitThreshold;
+    public DecisionTreeNode(int splitfeatureindex, double splitthreshold) {
+        this.isleaf = false;
+        this.predictedclass = -1;
+        this.splitfeatureindex = splitfeatureindex;
+        this.splitthreshold = splitthreshold;
     }
 
     public boolean isLeaf() {
-        return isLeaf;
+        return isleaf;
     }
 
     public int getPredictedClass() {
-        return predictedClass;
+        return predictedclass;
     }
 
     public int getSplitFeatureIndex() {
-        return splitFeatureIndex;
+        return splitfeatureindex;
     }
 
     public double getSplitThreshold() {
-        return splitThreshold;
+        return splitthreshold;
     }
 
     public DecisionTreeNode getLeftChild() {
-        return leftChild;
+        return leftchild;
     }
 
     public DecisionTreeNode getRightChild() {
-        return rightChild;
+        return rightchild;
     }
 
-    public void setLeftChild(DecisionTreeNode leftChild) {
-        this.leftChild = leftChild;
+    public void setLeftChild(DecisionTreeNode leftchild) {
+        this.leftchild = leftchild;
     }
 
-    public void setRightChild(DecisionTreeNode rightChild) {
-        this.rightChild = rightChild;
+    public void setRightChild(DecisionTreeNode rightchild) {
+        this.rightchild = rightchild;
     }
 }

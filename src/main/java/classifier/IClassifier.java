@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface IClassifier {
 
-    void train(List<ProcessedRecord> trainingData);
+    void train(List<ProcessedRecord> trainingdata);
 
     int predict(ProcessedRecord record);
 

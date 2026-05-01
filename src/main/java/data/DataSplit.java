@@ -6,27 +6,27 @@ import java.util.List;
 
 public class DataSplit {
 
-    private final List<SaleRecord> trainingData;
-    private final List<SaleRecord> testData;
+    private final List<SaleRecord> trainingdata;
+    private final List<SaleRecord> testdata;
 
-    public DataSplit(List<SaleRecord> trainingData, List<SaleRecord> testData) {
-        this.trainingData = trainingData;
-        this.testData = testData;
+    public DataSplit(List<SaleRecord> trainingdata, List<SaleRecord> testdata) {
+        this.trainingdata = trainingdata;
+        this.testdata = testdata;
     }
 
     public List<SaleRecord> getTrainingData() {
-        return trainingData;
+        return trainingdata;
     }
 
     public List<SaleRecord> getTestData() {
-        return testData;
+        return testdata;
     }
 
     public int getTrainingSize() {
-        return trainingData.size();
+        return trainingdata.size();
     }
 
     public int getTestSize() {
-        return testData.size();
+        return testdata.size();
     }
 }
