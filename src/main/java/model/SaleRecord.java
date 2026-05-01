@@ -3,18 +3,18 @@ package model;
 public class SaleRecord {
 
     private final String clientCode;
-    private final double age;
     private final String gender;
-    private final String city;
+    private final String brandCode;
+    private final String brand;
     private final double lineNetTotal;
     private final String categoryName1;
 
-    public SaleRecord(String clientCode, double age, String gender, String city,
+    public SaleRecord(String clientCode, String gender, String brandCode, String brand,
                       double lineNetTotal, String categoryName1) {
         this.clientCode = clientCode;
-        this.age = age;
         this.gender = gender;
-        this.city = city;
+        this.brandCode = brandCode;
+        this.brand = brand;
         this.lineNetTotal = lineNetTotal;
         this.categoryName1 = categoryName1;
     }
@@ -23,16 +23,16 @@ public class SaleRecord {
         return clientCode;
     }
 
-    public double getAge() {
-        return age;
-    }
-
     public String getGender() {
         return gender;
     }
 
-    public String getCity() {
-        return city;
+    public String getBrandCode() {
+        return brandCode;
+    }
+
+    public String getBrand() {
+        return brand;
     }
 
     public double getLineNetTotal() {
@@ -46,9 +46,9 @@ public class SaleRecord {
     @Override
     public String toString() {
         return "SaleRecord{clientCode=" + clientCode
-                + ", age=" + age
                 + ", gender=" + gender
-                + ", city=" + city
+                + ", brandCode=" + brandCode
+                + ", brand=" + brand
                 + ", lineNetTotal=" + lineNetTotal
                 + ", category=" + categoryName1 + "}";
     }
