@@ -212,10 +212,9 @@ public class MainFrame extends JFrame {
 
                 publish("\nOK - Dataset loaded successfully. Ready to run models.\n");
                 publish("\nFeatures used:\n");
-                publish("  [0] AGE           (min-max normalized)\n");
-                publish("  [1] GENDER        (encoded: E=0.0, K=1.0)\n");
-                publish("  [2] CITY          (label-encoded, normalized)\n");
-                publish("  [3] LINENETTOTAL  (min-max normalized)\n");
+                publish("  [0] GENDER        (encoded: E=0.0, K=1.0)\n");
+                publish("  [1] BRAND         (label-encoded, normalized)\n");
+                publish("  [2] LINENETTOTAL  (min-max normalized)\n");
                 publish("\nTarget: CATEGORY_NAME1 (" + classLabels.length + " classes)\n");
                 return null;
             }

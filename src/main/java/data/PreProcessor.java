@@ -16,18 +16,15 @@ public class PreProcessor {
 
     private static final int UNKNOWN_LABEL = -1;
     private static final double UNKNOWN_GENDER = 0.5;
-    private static final double UNKNOWN_CITY = 0.0;
-    private static final double UNKNOWN_AGE = 0.5;
+    private static final double UNKNOWN_BRAND = 0.0;
 
-    private final Map<String, Integer> cityEncoder = new HashMap<>();
+    private final Map<String, Integer> brandEncoder = new HashMap<>();
     private final Map<String, Integer> categoryEncoder = new HashMap<>();
     private String[] categoryLabels = new String[0];
 
-    private double ageMin;
-    private double ageMax;
     private double lineNetTotalMin;
     private double lineNetTotalMax;
-    private int cityCount;
+    private int brandCount;
     private boolean fitted = false;
 
     public List<SaleRecord> removeInvalidRecords(List<SaleRecord> records) {
@@ -54,14 +51,14 @@ public class PreProcessor {
             throw new IllegalArgumentException("Training data cannot be empty.");
         }
 
-        buildCityEncoder(trainingRecords);
+        buildBrandEncoder(trainingRecords);
         buildCategoryEncoder(trainingRecords);
         computeNumericStats(trainingRecords);
         fitted = true;
 
         System.out.println("[PreProcessor] Fitted on " + trainingRecords.size() + " training records.");
         System.out.println("[PreProcessor] Categories: " + Arrays.toString(categoryLabels));
-        System.out.println("[PreProcessor] Cities found: " + cityCount);
+        System.out.println("[PreProcessor] Brands found: " + brandCount);
     }
 
     public ProcessedRecord transform(SaleRecord kayit) {
@@ -69,11 +66,10 @@ public class PreProcessor {
             throw new IllegalStateException("PreProcessor must be fitted before calling transform().");
         }
 
-        double[] features = new double[4];
-        features[0] = normalizeAge(kayit.getAge());
-        features[1] = encodeGender(kayit.getGender());
-        features[2] = encodeCity(kayit.getCity());
-        features[3] = normalizeValue(kayit.getLineNetTotal(), lineNetTotalMin, lineNetTotalMax);
+        double[] features = new double[3];
+        features[0] = encodeGender(kayit.getGender());
+        features[1] = encodeBrand(kayit.getBrandCode());
+        features[2] = normalizeValue(kayit.getLineNetTotal(), lineNetTotalMin, lineNetTotalMax);
 
         int label = categoryEncoder.getOrDefault(kayit.getCategoryName1(), UNKNOWN_LABEL);
         return new ProcessedRecord(features, label, kayit.getCategoryName1());
@@ -87,20 +83,20 @@ public class PreProcessor {
         return sonuc;
     }
 
-    private void buildCityEncoder(List<SaleRecord> records) {
-        cityEncoder.clear();
+    private void buildBrandEncoder(List<SaleRecord> records) {
+        brandEncoder.clear();
         int index = 0;
 
         for (SaleRecord kayit : records) {
-            String city = kayit.getCity();
-            if (!isBlank(city) && !cityEncoder.containsKey(city)) {
-                cityEncoder.put(city, index++);
+            String brandCode = kayit.getBrandCode();
+            if (!isBlank(brandCode) && !brandEncoder.containsKey(brandCode)) {
+                brandEncoder.put(brandCode, index++);
             }
         }
 
-        cityCount = cityEncoder.size();
-        if (cityCount == 0) {
-            cityCount = 1;
+        brandCount = brandEncoder.size();
+        if (brandCount == 0) {
+            brandCount = 1;
         }
     }
 
@@ -126,34 +122,17 @@ public class PreProcessor {
     }
 
     private void computeNumericStats(List<SaleRecord> records) {
-        ageMin = Double.POSITIVE_INFINITY;
-        ageMax = Double.NEGATIVE_INFINITY;
         lineNetTotalMin = Double.POSITIVE_INFINITY;
         lineNetTotalMax = Double.NEGATIVE_INFINITY;
 
         for (SaleRecord kayit : records) {
-            if (!Double.isNaN(kayit.getAge()) && kayit.getAge() >= 0) {
-                ageMin = Math.min(ageMin, kayit.getAge());
-                ageMax = Math.max(ageMax, kayit.getAge());
-            }
             lineNetTotalMin = Math.min(lineNetTotalMin, kayit.getLineNetTotal());
             lineNetTotalMax = Math.max(lineNetTotalMax, kayit.getLineNetTotal());
         }
 
-        if (ageMin == Double.POSITIVE_INFINITY || ageMin == ageMax) {
-            ageMin = 0.0;
-            ageMax = 1.0;
-        }
         if (lineNetTotalMin == lineNetTotalMax) {
             lineNetTotalMax = lineNetTotalMin + 1.0;
         }
-    }
-
-    private double normalizeAge(double age) {
-        if (Double.isNaN(age) || age < 0) {
-            return UNKNOWN_AGE;
-        }
-        return normalizeValue(age, ageMin, ageMax);
     }
 
     private double encodeGender(String gender) {
@@ -164,12 +143,12 @@ public class PreProcessor {
         return UNKNOWN_GENDER;
     }
 
-    private double encodeCity(String city) {
-        if (!cityEncoder.containsKey(city)) {
-            return UNKNOWN_CITY;
+    private double encodeBrand(String brandCode) {
+        if (!brandEncoder.containsKey(brandCode)) {
+            return UNKNOWN_BRAND;
         }
-        int index = cityEncoder.get(city);
-        return cityCount > 1 ? (double) index / (cityCount - 1) : 0.0;
+        int index = brandEncoder.get(brandCode);
+        return brandCount > 1 ? (double) index / (brandCount - 1) : 0.0;
     }
 
     private double normalizeValue(double value, double min, double max) {
@@ -192,7 +171,7 @@ public class PreProcessor {
         return Collections.unmodifiableMap(categoryEncoder);
     }
 
-    public Map<String, Integer> getCityEncoder() {
-        return Collections.unmodifiableMap(cityEncoder);
+    public Map<String, Integer> getBrandEncoder() {
+        return Collections.unmodifiableMap(brandEncoder);
     }
 }

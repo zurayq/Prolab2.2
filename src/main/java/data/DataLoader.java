@@ -19,7 +19,6 @@ import java.util.Map;
 public class DataLoader {
 
     private static final int MIN_NON_NULL_CELLS = 5;
-    private static final String UNKNOWN_CITY = "UNKNOWN";
 
     private int totalRowsRead = 0;
     private int skippedRows = 0;
@@ -85,24 +84,20 @@ public class DataLoader {
     private SaleRecord parseRow(Row row) {
         String clientCode = getString(row, column("CLIENTCODE", 9));
         String gender = getString(row, column("GENDER", 17));
-        String city = getString(row, columnAny(new String[]{"CITY", "CITY_NAME", "SEHIR", "IL"}, -1));
+        String brandCode = getString(row, column("BRANDCODE", 10));
+        String brand = getString(row, column("BRAND", 11));
         String category = getString(row, column("CATEGORY_NAME1", 12));
+        double lineNetTotal = getDouble(row, column("LINENETTOTAL", 7));
 
         if (isBlank(gender) || isBlank(category)) {
             return null;
         }
-        if (isBlank(city)) {
-            city = UNKNOWN_CITY;
-        }
-
-        double age = getDouble(row, columnAny(new String[]{"AGE", "YAS"}, -1));
-        double lineNetTotal = getDouble(row, column("LINENETTOTAL", 7));
 
         if (Double.isNaN(lineNetTotal)) {
             return null;
         }
 
-        return new SaleRecord(clientCode, age, gender, city, lineNetTotal, category);
+        return new SaleRecord(clientCode, gender, brandCode, brand, lineNetTotal, category);
     }
 
     private int column(String name, int fallback) {
