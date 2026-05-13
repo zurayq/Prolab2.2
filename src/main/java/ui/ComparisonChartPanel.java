@@ -16,15 +16,15 @@ import java.util.List;
 
 public class ComparisonChartPanel extends JPanel {
 
-    private static final Color colorknn = new Color(70, 130, 180);
-    private static final Color colordt = new Color(60, 179, 113);
-    private static final Color colorbg = new Color(245, 245, 250);
-    private static final Color colorgrid = new Color(200, 200, 210);
+    private static final Color COLOR_KNN = new Color(70, 130, 180);
+    private static final Color COLOR_DT = new Color(60, 179, 113);
+    private static final Color COLOR_BG = new Color(245, 245, 250);
+    private static final Color COLOR_GRID = new Color(200, 200, 210);
 
     private final List<EvaluationResult> results = new ArrayList<>();
 
     public ComparisonChartPanel() {
-        setBackground(colorbg);
+        setBackground(COLOR_BG);
         setPreferredSize(new Dimension(500, 260));
         setBorder(BorderFactory.createTitledBorder("accuracy and prediction time"));
     }
@@ -49,76 +49,76 @@ public class ComparisonChartPanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         int margin = 50;
-        int chartwidth = getWidth() - margin * 2;
-        int chartheight = getHeight() - margin * 2;
-        int charttop = margin;
-        int chartbottom = getHeight() - margin;
+        int chartWidth = getWidth() - margin * 2;
+        int chartHeight = getHeight() - margin * 2;
+        int chartTop = margin;
+        int chartBottom = getHeight() - margin;
 
-        drawGrid(g2, margin, charttop, chartwidth, chartheight);
+        drawGrid(g2, margin, chartTop, chartWidth, chartHeight);
 
-        int numberofgroups = 2;
-        int barspergroup = results.size();
-        int groupgap = 30;
-        int bargap = 5;
-        int groupwidth = (chartwidth - groupgap * (numberofgroups - 1)) / numberofgroups;
-        int barwidth = (groupwidth - bargap * (barspergroup + 1)) / barspergroup;
+        int numberOfGroups = 2;
+        int barsPerGroup = results.size();
+        int groupGap = 30;
+        int barGap = 5;
+        int groupWidth = (chartWidth - groupGap * (numberOfGroups - 1)) / numberOfGroups;
+        int barWidth = (groupWidth - barGap * (barsPerGroup + 1)) / barsPerGroup;
 
-        drawAccuracyBars(g2, margin, groupwidth, barwidth, bargap, chartheight, chartbottom);
-        drawPredictionTimeBars(g2, margin + groupwidth + groupgap, groupwidth, barwidth,
-                bargap, charttop, chartheight, chartbottom);
-        drawLegend(g2, margin, charttop - 10);
+        drawAccuracyBars(g2, margin, groupWidth, barWidth, barGap, chartHeight, chartBottom);
+        drawPredictionTimeBars(g2, margin + groupWidth + groupGap, groupWidth, barWidth,
+                barGap, chartTop, chartHeight, chartBottom);
+        drawLegend(g2, margin, chartTop - 10);
     }
 
-    private void drawAccuracyBars(Graphics2D g2, int groupx, int groupwidth, int barwidth,
-                                  int bargap, int chartheight, int chartbottom) {
-        drawGroupLabel(g2, groupx + groupwidth / 2, chartbottom + 20, "accuracy (%)");
+    private void drawAccuracyBars(Graphics2D g2, int groupX, int groupWidth, int barWidth,
+                                  int barGap, int chartHeight, int chartBottom) {
+        drawGroupLabel(g2, groupX + groupWidth / 2, chartBottom + 20, "accuracy (%)");
 
         for (int i = 0; i < results.size(); i++) {
             EvaluationResult result = results.get(i);
-            int barheight = (int) (result.getAccuracy() * chartheight);
-            int barx = groupx + bargap + i * (barwidth + bargap);
-            int bary = chartbottom - barheight;
+            int barHeight = (int) (result.getAccuracy() * chartHeight);
+            int barX = groupX + barGap + i * (barWidth + barGap);
+            int barY = chartBottom - barHeight;
 
             g2.setColor(getBarColor(result.getClassifierName()));
-            g2.fillRect(barx, bary, barwidth, barheight);
+            g2.fillRect(barX, barY, barWidth, barHeight);
 
             g2.setColor(Color.DARK_GRAY);
             g2.setFont(new Font("SansSerif", Font.BOLD, 10));
-            g2.drawString(String.format("%.1f%%", result.getAccuracy() * 100), barx + 2, bary - 4);
+            g2.drawString(String.format("%.1f%%", result.getAccuracy() * 100), barX + 2, barY - 4);
         }
     }
 
-    private void drawPredictionTimeBars(Graphics2D g2, int groupx, int groupwidth, int barwidth,
-                                        int bargap, int charttop, int chartheight, int chartbottom) {
-        long maxtime = 1;
+    private void drawPredictionTimeBars(Graphics2D g2, int groupX, int groupWidth, int barWidth,
+                                        int barGap, int chartTop, int chartHeight, int chartBottom) {
+        long maxTime = 1;
         for (EvaluationResult result : results) {
-            maxtime = Math.max(maxtime, result.getPredictionTimeMs());
+            maxTime = Math.max(maxTime, result.getPredictionTimeMs());
         }
 
-        drawGroupLabel(g2, groupx + groupwidth / 2, chartbottom + 20, "prediction time");
+        drawGroupLabel(g2, groupX + groupWidth / 2, chartBottom + 20, "prediction time");
 
         for (int i = 0; i < results.size(); i++) {
             EvaluationResult result = results.get(i);
-            long timems = result.getPredictionTimeMs();
-            double ratio = (double) timems / maxtime;
-            int barheight = (int) (ratio * chartheight);
-            int barx = groupx + bargap + i * (barwidth + bargap);
-            int bary = chartbottom - barheight;
+            long timeMs = result.getPredictionTimeMs();
+            double ratio = (double) timeMs / maxTime;
+            int barHeight = (int) (ratio * chartHeight);
+            int barX = groupX + barGap + i * (barWidth + barGap);
+            int barY = chartBottom - barHeight;
 
             g2.setColor(getBarColor(result.getClassifierName()));
-            g2.fillRect(barx, bary, barwidth, barheight);
+            g2.fillRect(barX, barY, barWidth, barHeight);
 
             g2.setColor(Color.DARK_GRAY);
             g2.setFont(new Font("SansSerif", Font.BOLD, 10));
-            g2.drawString(result.getPredictionTimeText(), barx + 2, Math.max(bary - 4, charttop + 12));
+            g2.drawString(result.getPredictionTimeText(), barX + 2, Math.max(barY - 4, chartTop + 12));
         }
     }
 
     private void drawGrid(Graphics2D g2, int x, int y, int width, int height) {
-        g2.setColor(colorgrid);
+        g2.setColor(COLOR_GRID);
         for (int i = 0; i <= 4; i++) {
-            int liney = y + height - (i * height / 4);
-            g2.drawLine(x, liney, x + width, liney);
+            int lineY = y + height - (i * height / 4);
+            g2.drawLine(x, lineY, x + width, lineY);
         }
 
         g2.setColor(Color.DARK_GRAY);
@@ -126,33 +126,33 @@ public class ComparisonChartPanel extends JPanel {
         g2.drawLine(x, y, x, y + height);
     }
 
-    private void drawGroupLabel(Graphics2D g2, int centerx, int y, String text) {
+    private void drawGroupLabel(Graphics2D g2, int centerX, int y, String text) {
         g2.setColor(Color.DARK_GRAY);
         g2.setFont(new Font("SansSerif", Font.PLAIN, 11));
         FontMetrics metrics = g2.getFontMetrics();
-        g2.drawString(text, centerx - metrics.stringWidth(text) / 2, y);
+        g2.drawString(text, centerX - metrics.stringWidth(text) / 2, y);
     }
 
     private void drawLegend(Graphics2D g2, int x, int y) {
-        int boxsize = 12;
-        int currentx = x;
+        int boxSize = 12;
+        int currentX = x;
 
         for (EvaluationResult result : results) {
             String name = result.getClassifierName();
             g2.setColor(getBarColor(name));
-            g2.fillRect(currentx, y, boxsize, boxsize);
+            g2.fillRect(currentX, y, boxSize, boxSize);
 
             g2.setColor(Color.DARK_GRAY);
             g2.setFont(new Font("SansSerif", Font.PLAIN, 10));
-            g2.drawString(name, currentx + boxsize + 4, y + 10);
-            currentx += boxsize + g2.getFontMetrics().stringWidth(name) + 20;
+            g2.drawString(name, currentX + boxSize + 4, y + 10);
+            currentX += boxSize + g2.getFontMetrics().stringWidth(name) + 20;
         }
     }
 
-    private Color getBarColor(String classifiername) {
-        if (classifiername != null && classifiername.startsWith("KNN")) {
-            return colorknn;
+    private Color getBarColor(String classifierName) {
+        if (classifierName != null && classifierName.startsWith("KNN")) {
+            return COLOR_KNN;
         }
-        return colordt;
+        return COLOR_DT;
     }
 }

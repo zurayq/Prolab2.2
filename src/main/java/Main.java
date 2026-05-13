@@ -1,7 +1,7 @@
-import ui.MainFrame;
-
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
+import ui.MainFrame;
 
 public class Main {
 
@@ -11,7 +11,6 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Could not set system look and feel: " + e.getMessage());
         }
-
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
             frame.setVisible(true);

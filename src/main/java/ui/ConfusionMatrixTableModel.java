@@ -8,29 +8,29 @@ public class ConfusionMatrixTableModel extends AbstractTableModel {
 
     private int[][] matrix;
     private String[] labels;
-    private int numclasses;
+    private int numClasses;
 
     public ConfusionMatrixTableModel() {
         matrix = new int[0][0];
         labels = new String[0];
-        numclasses = 0;
+        numClasses = 0;
     }
 
     public void setData(EvaluationResult result) {
         matrix = result.getConfusionMatrix();
         labels = result.getClassLabels();
-        numclasses = labels.length;
+        numClasses = labels.length;
         fireTableStructureChanged();
     }
 
     @Override
     public int getRowCount() {
-        return numclasses;
+        return numClasses;
     }
 
     @Override
     public int getColumnCount() {
-        return numclasses + 1;
+        return numClasses + 1;
     }
 
     @Override

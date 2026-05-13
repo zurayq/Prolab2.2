@@ -2,93 +2,82 @@ package model;
 
 public class EvaluationResult {
 
-    private final String classifiername;
+    private final String classifierName;
     private final double accuracy;
-    private final int[][] confusionmatrix;
-    private final String[] classlabels;
-    private final int evaluatedcount;
-    private final int skippedcount;
-    private final long trainingtimems;
-    private final long predictiontimems;
+    private final int[][] confusionMatrix;
+    private final String[] classLabels;
+    private final int evaluatedCount;
+    private final int skippedCount;
+    private final long trainingTimeMs;
+    private final long predictionTimeMs;
 
-    public EvaluationResult(String classifiername,
+    public EvaluationResult(String classifierName,
                             double accuracy,
-                            int[][] confusionmatrix,
-                            String[] classlabels,
-                            int evaluatedcount,
-                            int skippedcount,
-                            long trainingtimems,
-                            long predictiontimems) {
-        this.classifiername = classifiername;
+                            int[][] confusionMatrix,
+                            String[] classLabels,
+                            int evaluatedCount,
+                            int skippedCount,
+                            long trainingTimeMs,
+                            long predictionTimeMs) {
+        this.classifierName = classifierName;
         this.accuracy = accuracy;
-        this.confusionmatrix = confusionmatrix;
-        this.classlabels = classlabels;
-        this.evaluatedcount = evaluatedcount;
-        this.skippedcount = skippedcount;
-        this.trainingtimems = trainingtimems;
-        this.predictiontimems = predictiontimems;
+        this.confusionMatrix = confusionMatrix;
+        this.classLabels = classLabels;
+        this.evaluatedCount = evaluatedCount;
+        this.skippedCount = skippedCount;
+        this.trainingTimeMs = trainingTimeMs;
+        this.predictionTimeMs = predictionTimeMs;
     }
-
     public String getClassifierName() {
-        return classifiername;
+        return classifierName;
     }
-
     public double getAccuracy() {
         return accuracy;
     }
-
     public int[][] getConfusionMatrix() {
-        return confusionmatrix;
+        return confusionMatrix;
     }
-
     public String[] getClassLabels() {
-        return classlabels;
+        return classLabels;
     }
-
     public int getEvaluatedCount() {
-        return evaluatedcount;
+        return evaluatedCount;
     }
-
     public int getSkippedCount() {
-        return skippedcount;
+        return skippedCount;
     }
-
     public int getTotalTestCount() {
-        return evaluatedcount + skippedcount;
+        return evaluatedCount + skippedCount;
     }
-
     public long getTrainingTimeMs() {
-        return trainingtimems;
+        return trainingTimeMs;
     }
-
     public long getPredictionTimeMs() {
-        return predictiontimems;
+        return predictionTimeMs;
     }
 
     public String getTrainingTimeText() {
-        return formatElapsedTime(trainingtimems);
+        return formatElapsedTime(trainingTimeMs);
     }
-
     public String getPredictionTimeText() {
-        return formatElapsedTime(predictiontimems);
+        return formatElapsedTime(predictionTimeMs);
     }
 
     public String getSummary() {
         StringBuilder summary = new StringBuilder();
-        summary.append(classifiername).append("\n");
+        summary.append(classifierName).append("\n");
         summary.append(String.format("accuracy        : %.2f%%\n", accuracy * 100));
         summary.append("training time   : ").append(getTrainingTimeText()).append("\n");
         summary.append("prediction time : ").append(getPredictionTimeText()).append("\n");
-        if (skippedcount > 0) {
-            summary.append("skipped records : ").append(skippedcount).append(" (unknown class labels)\n");
+        if (skippedCount > 0) {
+            summary.append("skipped records : ").append(skippedCount).append(" (unknown class labels)\n");
         }
         return summary.toString();
     }
-
-    public static String formatElapsedTime(long timems) {
-        if (timems <= 0) {
+    public static String formatElapsedTime(long timeMs) {
+        if (timeMs <= 0) {
             return "< 1 ms";
         }
-        return timems + " ms";
+        return timeMs + " ms";
     }
 }

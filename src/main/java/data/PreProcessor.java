@@ -14,30 +14,26 @@ import java.util.TreeSet;
 
 public class PreProcessor {
 
-    private static final int unknownlabel = -1;
-    private static final double unknowngender = 0.5;
-    private static final double unknownbrand = 0.0;
-
-    private final Map<String, Integer> brandencoder = new HashMap<>();
-    private final Map<String, Integer> categoryencoder = new HashMap<>();
-    private String[] categorylabels = new String[0];
-
-    private double linenettotalmin;
-    private double linenettotalmax;
-    private int brandcount;
+    private static final int UNKNOWN_LABEL = -1;
+    private static final double UNKNOWN_GENDER = 0.5;
+    private static final double UNKNOWN_BRAND = 0.0;
+    private final Map<String, Integer> brandEncoder = new HashMap<>();
+    private final Map<String, Integer> categoryEncoder = new HashMap<>();
+    private String[] categoryLabels = new String[0];
+    private double lineNetTotalMin;
+    private double lineNetTotalMax;
+    private int brandCount;
     private boolean fitted = false;
-
     public List<SaleRecord> removeInvalidRecords(List<SaleRecord> records) {
-        List<SaleRecord> validrecords = new ArrayList<>();
+        List<SaleRecord> validRecords = new ArrayList<>();
         for (SaleRecord record : records) {
             if (isValidRecord(record)) {
-                validrecords.add(record);
+                validRecords.add(record);
             }
         }
-        System.out.println("[PreProcessor] Valid records after validation: " + validrecords.size());
-        return validrecords;
+        System.out.println("[PreProcessor] Valid records after validation: " + validRecords.size());
+        return validRecords;
     }
-
     private boolean isValidRecord(SaleRecord record) {
         if (record == null) return false;
         if (isBlank(record.getGender())) return false;
@@ -45,33 +41,30 @@ public class PreProcessor {
         if (Double.isNaN(record.getLineNetTotal()) || record.getLineNetTotal() < 0) return false;
         return true;
     }
-
-    public void fitOnTrainingData(List<SaleRecord> trainingrecords) {
-        if (trainingrecords == null || trainingrecords.isEmpty()) {
+    public void fitOnTrainingData(List<SaleRecord> trainingRecords) {
+        if (trainingRecords == null || trainingRecords.isEmpty()) {
             throw new IllegalArgumentException("Training data cannot be empty.");
         }
 
-        buildBrandEncoder(trainingrecords);
-        buildCategoryEncoder(trainingrecords);
-        computeNumericStats(trainingrecords);
+        buildBrandEncoder(trainingRecords);
+        buildCategoryEncoder(trainingRecords);
+        computeNumericStats(trainingRecords);
         fitted = true;
-
-        System.out.println("[PreProcessor] Fitted on " + trainingrecords.size() + " training records.");
-        System.out.println("[PreProcessor] Categories: " + Arrays.toString(categorylabels));
-        System.out.println("[PreProcessor] Brands found: " + brandcount);
+        System.out.println("[PreProcessor] Fitted on " + trainingRecords.size() + " training records.");
+        System.out.println("[PreProcessor] Categories: " + Arrays.toString(categoryLabels));
+        System.out.println("[PreProcessor] Brands found: " + brandCount);
     }
 
     public ProcessedRecord transform(SaleRecord record) {
         if (!fitted) {
             throw new IllegalStateException("PreProcessor must be fitted before calling transform().");
         }
-
         double[] features = new double[3];
         features[0] = encodeGender(record.getGender());
         features[1] = encodeBrand(record.getBrandCode());
-        features[2] = normalizeValue(record.getLineNetTotal(), linenettotalmin, linenettotalmax);
+        features[2] = normalizeValue(record.getLineNetTotal(), lineNetTotalMin, lineNetTotalMax);
 
-        int label = categoryencoder.getOrDefault(record.getCategoryName1(), unknownlabel);
+        int label = categoryEncoder.getOrDefault(record.getCategoryName1(), UNKNOWN_LABEL);
         return new ProcessedRecord(features, label, record.getCategoryName1());
     }
 
@@ -82,26 +75,24 @@ public class PreProcessor {
         }
         return result;
     }
-
     private void buildBrandEncoder(List<SaleRecord> records) {
-        brandencoder.clear();
+        brandEncoder.clear();
         int index = 0;
-
         for (SaleRecord record : records) {
-            String brandcode = record.getBrandCode();
-            if (!isBlank(brandcode) && !brandencoder.containsKey(brandcode)) {
-                brandencoder.put(brandcode, index++);
+            String brandCode = record.getBrandCode();
+            if (!isBlank(brandCode) && !brandEncoder.containsKey(brandCode)) {
+                brandEncoder.put(brandCode, index++);
             }
         }
 
-        brandcount = brandencoder.size();
-        if (brandcount == 0) {
-            brandcount = 1;
+        brandCount = brandEncoder.size();
+        if (brandCount == 0) {
+            brandCount = 1;
         }
     }
 
     private void buildCategoryEncoder(List<SaleRecord> records) {
-        categoryencoder.clear();
+        categoryEncoder.clear();
         Set<String> categories = new TreeSet<>();
 
         for (SaleRecord record : records) {
@@ -109,69 +100,59 @@ public class PreProcessor {
                 categories.add(record.getCategoryName1());
             }
         }
-
         int index = 0;
         for (String category : categories) {
-            categoryencoder.put(category, index++);
+            categoryEncoder.put(category, index++);
         }
 
-        categorylabels = new String[categoryencoder.size()];
-        for (Map.Entry<String, Integer> entry : categoryencoder.entrySet()) {
-            categorylabels[entry.getValue()] = entry.getKey();
+        categoryLabels = new String[categoryEncoder.size()];
+        for (Map.Entry<String, Integer> entry : categoryEncoder.entrySet()) {
+            categoryLabels[entry.getValue()] = entry.getKey();
         }
     }
-
     private void computeNumericStats(List<SaleRecord> records) {
-        linenettotalmin = Double.POSITIVE_INFINITY;
-        linenettotalmax = Double.NEGATIVE_INFINITY;
+        lineNetTotalMin = Double.POSITIVE_INFINITY;
+        lineNetTotalMax = Double.NEGATIVE_INFINITY;
 
         for (SaleRecord record : records) {
-            linenettotalmin = Math.min(linenettotalmin, record.getLineNetTotal());
-            linenettotalmax = Math.max(linenettotalmax, record.getLineNetTotal());
+            lineNetTotalMin = Math.min(lineNetTotalMin, record.getLineNetTotal());
+            lineNetTotalMax = Math.max(lineNetTotalMax, record.getLineNetTotal());
         }
 
-        if (linenettotalmin == linenettotalmax) {
-            linenettotalmax = linenettotalmin + 1.0;
+        if (lineNetTotalMin == lineNetTotalMax) {
+            lineNetTotalMax = lineNetTotalMin + 1.0;
         }
     }
-
     private double encodeGender(String gender) {
         if ("E".equalsIgnoreCase(gender)) return 0.0;
         if ("K".equalsIgnoreCase(gender)) return 1.0;
         if ("M".equalsIgnoreCase(gender)) return 0.0;
         if ("F".equalsIgnoreCase(gender)) return 1.0;
-        return unknowngender;
+        return UNKNOWN_GENDER;
     }
-
-    private double encodeBrand(String brandcode) {
-        if (!brandencoder.containsKey(brandcode)) {
-            return unknownbrand;
+    private double encodeBrand(String brandCode) {
+        if (!brandEncoder.containsKey(brandCode)) {
+            return UNKNOWN_BRAND;
         }
-        int index = brandencoder.get(brandcode);
-        return brandcount > 1 ? (double) index / (brandcount - 1) : 0.0;
+        int index = brandEncoder.get(brandCode);
+        return brandCount > 1 ? (double) index / (brandCount - 1) : 0.0;
     }
-
     private double normalizeValue(double value, double min, double max) {
         return (value - min) / (max - min);
     }
-
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
-
     public String[] getCategoryLabels() {
-        return categorylabels;
+        return categoryLabels;
     }
-
     public int getNumberOfClasses() {
-        return categoryencoder.size();
+        return categoryEncoder.size();
     }
-
     public Map<String, Integer> getCategoryEncoder() {
-        return Collections.unmodifiableMap(categoryencoder);
+        return Collections.unmodifiableMap(categoryEncoder);
     }
-
     public Map<String, Integer> getBrandEncoder() {
-        return Collections.unmodifiableMap(brandencoder);
+        return Collections.unmodifiableMap(brandEncoder);
     }
 }

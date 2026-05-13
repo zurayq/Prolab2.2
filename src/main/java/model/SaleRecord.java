@@ -2,54 +2,47 @@ package model;
 
 public class SaleRecord {
 
-    private final String clientcode;
+    private final String clientCode;
     private final String gender;
-    private final String brandcode;
+    private final String brandCode;
     private final String brand;
-    private final double linenettotal;
-    private final String categoryname1;
-
-    public SaleRecord(String clientcode, String gender, String brandcode, String brand,
-                      double linenettotal, String categoryname1) {
-        this.clientcode = clientcode;
+    private final double lineNetTotal;
+    private final String categoryName1;
+    public SaleRecord(String clientCode, String gender, String brandCode, String brand,
+                      double lineNetTotal, String categoryName1) {
+        this.clientCode = clientCode;
         this.gender = gender;
-        this.brandcode = brandcode;
+        this.brandCode = brandCode;
         this.brand = brand;
-        this.linenettotal = linenettotal;
-        this.categoryname1 = categoryname1;
+        this.lineNetTotal = lineNetTotal;
+        this.categoryName1 = categoryName1;
     }
 
     public String getClientCode() {
-        return clientcode;
+        return clientCode;
     }
-
     public String getGender() {
         return gender;
     }
-
     public String getBrandCode() {
-        return brandcode;
+        return brandCode;
     }
-
     public String getBrand() {
         return brand;
     }
-
     public double getLineNetTotal() {
-        return linenettotal;
+        return lineNetTotal;
     }
-
     public String getCategoryName1() {
-        return categoryname1;
+        return categoryName1;
     }
-
     @Override
     public String toString() {
-        return "SaleRecord{clientCode=" + clientcode
+        return "SaleRecord{clientCode=" + clientCode
                 + ", gender=" + gender
-                + ", brandCode=" + brandcode
+                + ", brandCode=" + brandCode
                 + ", brand=" + brand
-                + ", lineNetTotal=" + linenettotal
-                + ", category=" + categoryname1 + "}";
+                + ", lineNetTotal=" + lineNetTotal
+                + ", category=" + categoryName1 + "}";
     }
 }

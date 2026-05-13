@@ -7,11 +7,9 @@ import java.util.Comparator;
 import java.util.List;
 
 public class KNNClassifier extends BaseClassifier {
-
-    public static final int defaultk = 5;
-
+    public static final int DEFAULT_K = 5;
     private int k;
-    private List<ProcessedRecord> trainingdata = new ArrayList<>();
+    private List<ProcessedRecord> trainingData = new ArrayList<>();
 
     public KNNClassifier(int k) {
         if (k < 1) {
@@ -19,82 +17,71 @@ public class KNNClassifier extends BaseClassifier {
         }
         this.k = k;
     }
-
     public KNNClassifier() {
-        this(defaultk);
+        this(DEFAULT_K);
     }
 
     @Override
-    public void train(List<ProcessedRecord> trainingdata) {
-        if (trainingdata == null || trainingdata.isEmpty()) {
+    public void train(List<ProcessedRecord> trainingData) {
+        if (trainingData == null || trainingData.isEmpty()) {
             throw new IllegalArgumentException("KNN needs at least one training record.");
         }
-
-        this.trainingdata = new ArrayList<>(trainingdata);
-        System.out.println("[KNN] Training complete. Stored " + this.trainingdata.size() + " records. K=" + k);
+        this.trainingData = new ArrayList<>(trainingData);
+        System.out.println("[KNN] Training complete. Stored " + this.trainingData.size() + " records. K=" + k);
     }
 
     @Override
     public int predict(ProcessedRecord record) {
-        if (trainingdata.isEmpty()) {
+        if (trainingData.isEmpty()) {
             throw new IllegalStateException("KNN must be trained before prediction.");
         }
-
-        List<Neighbor> neibors = findNeighbors(record);
-        int votecount = Math.min(k, neibors.size());
+        List<Neighbor> neighbors = findNeighbors(record);
+        int voteCount = Math.min(k, neighbors.size());
 
         List<Integer> labels = new ArrayList<>();
-        for (int i = 0; i < votecount; i++) {
-            labels.add(neibors.get(i).label);
+        for (int i = 0; i < voteCount; i++) {
+            labels.add(neighbors.get(i).label);
         }
-
         return majorityVote(labels);
     }
 
     private List<Neighbor> findNeighbors(ProcessedRecord record) {
-        List<Neighbor> neibors = new ArrayList<>();
-        for (ProcessedRecord trainrecord : trainingdata) {
-            double distance = computeDistance(record.getFeatures(), trainrecord.getFeatures());
-            neibors.add(new Neighbor(distance, trainrecord.getLabel()));
+        List<Neighbor> neighbors = new ArrayList<>();
+        for (ProcessedRecord trainRecord : trainingData) {
+            double distance = computeDistance(record.getFeatures(), trainRecord.getFeatures());
+            neighbors.add(new Neighbor(distance, trainRecord.getLabel()));
         }
 
-        neibors.sort(Comparator.comparingDouble(neighbor -> neighbor.distance));
-        return neibors;
+        neighbors.sort(Comparator.comparingDouble(neighbor -> neighbor.distance));
+        return neighbors;
     }
-
-    private double computeDistance(double[] featuresa, double[] featuresb) {
-        if (featuresa.length != featuresb.length) {
+    private double computeDistance(double[] featuresA, double[] featuresB) {
+        if (featuresA.length != featuresB.length) {
             throw new IllegalArgumentException("Feature vectors must have the same length.");
         }
-
         double sum = 0.0;
-        for (int i = 0; i < featuresa.length; i++) {
-            double diff = featuresa[i] - featuresb[i];
+        for (int i = 0; i < featuresA.length; i++) {
+            double diff = featuresA[i] - featuresB[i];
             sum += diff * diff;
         }
         return Math.sqrt(sum);
     }
-
     @Override
     public String getName() {
         return "KNN (k=" + k + ")";
     }
-
     public int getK() {
         return k;
     }
-
     public void setK(int k) {
         if (k < 1) {
             throw new IllegalArgumentException("K must be at least 1.");
         }
         this.k = k;
     }
-
     private static class Neighbor {
         private final double distance;
         private final int label;
-
         private Neighbor(double distance, int label) {
             this.distance = distance;
             this.label = label;

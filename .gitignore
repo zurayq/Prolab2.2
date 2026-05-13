@@ -18,6 +18,13 @@ qa-build/
 
 *.xlsx
 *.xls
+!src/main/resources/data/MarketSalesKocaeli.xlsx
 
 .DS_Store
-Thumbs.dbinspect_xlsx.py
+Thumbs.db
+inspect_xlsx.py
+.m2/
+*.zip
+230201146/
+240201160.txt
+all_source_codes.txt

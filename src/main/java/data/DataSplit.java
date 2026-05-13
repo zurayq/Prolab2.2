@@ -1,32 +1,25 @@
 package data;
-
 import model.SaleRecord;
-
 import java.util.List;
 
 public class DataSplit {
 
-    private final List<SaleRecord> trainingdata;
-    private final List<SaleRecord> testdata;
-
-    public DataSplit(List<SaleRecord> trainingdata, List<SaleRecord> testdata) {
-        this.trainingdata = trainingdata;
-        this.testdata = testdata;
+    private final List<SaleRecord> trainingData;
+    private final List<SaleRecord> testData;
+    public DataSplit(List<SaleRecord> trainingData, List<SaleRecord> testData) {
+        this.trainingData = trainingData;
+        this.testData = testData;
     }
-
     public List<SaleRecord> getTrainingData() {
-        return trainingdata;
+        return trainingData;
     }
-
     public List<SaleRecord> getTestData() {
-        return testdata;
+        return testData;
     }
-
     public int getTrainingSize() {
-        return trainingdata.size();
+        return trainingData.size();
     }
-
     public int getTestSize() {
-        return testdata.size();
+        return testData.size();
     }
 }
